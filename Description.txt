@@ -1,0 +1,34 @@
+Common_*: These directories hold projects that are standalones, and should not be bundled with iter3
+
+Common_API		: Examples of projects are: Promises.
+Common_UI		: Examples of projects are: TKX
+Common_Config 	: Examples are configurations for Promises & TKX
+
+Local_*: These directories are used to hold code specific to iter3 projects
+
+
+
+---------------------------------
+
+Things to create:
+
+ThreadedNetworkPromises
+	-Expand to processes even? IDK
+
+Encrypted Sockets
+	-Use Twisted for network
+		-If I use twisted, threads would not be needed
+		-But I have to do event driven programming?
+		-Perhaps the events trigger .execute()
+	-Wrap socket around basic public encrypted key algo
+		-One key is decided, use AES-512?
+
+Logging
+	-Internal logs for system
+	-Relayed to something outside server, to other network
+
+------------------------------------
+
+-Interesting idea to implement into Note Keeper
+	-Ability to intelligently search through files on disk and import potential notes
+	-Original algorithm could simply be based on something simple such as User selected folders
