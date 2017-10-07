@@ -1,4 +1,5 @@
 from common_ui.atoms import Window
+from common_ui.templates import LoginTemplate
 from sys import platform
 
 ###
@@ -22,4 +23,9 @@ class AppView(Window):
 		self.launcher_frame = HomeTemplate(self)
 		self.launcher_frame.pack_propagate(False)
 		self.launcher_frame.pack(fill="both", padx=5, pady=5, expand=True)
-	
+
+class LoginView(LoginTemplate):
+	def __init__(self):
+		LoginTemplate.__init__(self)
+
+		

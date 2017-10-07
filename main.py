@@ -11,7 +11,7 @@ import local_api.network.twisted_tksupport as tksupport
 from local_api.network.twisted_promises import Promises
 
 #from common_ui.templates import LoginTemplate
-from local_ui.views import AppView
+from local_ui.views import AppView, LoginView
 
 from local_config.main_styles import getStyles as local_styles
 
@@ -30,6 +30,17 @@ def twisted_connection_success(connectedProtocol):
 
 ##################################
 
+def launch_app_view(e=None):
+	# Create initial App View
+	lt = AppView()
+	lt.bind("<<Close_Window>>", lambda e: reactor.stop())
+	# Load Plugins
+	plg_manage = PluginManager(b)
+	for activePlugin in plg_manage.loadedPlugins:
+		lt.launcher_frame.addAppToLauncher(activePlugin.CONST_PLUGIN_NAME, None, activePlugin.ON_CLICK_METHOD)
+
+def authenticate():
+	pass
 
 Promises.setDefaultMode(mode="Client") #Set the PromiseManager to execute promises on client mode by default
 setTwistedPromiseManager(Promises) #Bind the PromiseManager to our twisted protocol
@@ -38,17 +49,10 @@ b.loadStyleSheet(main_styles())
 b.addStyleSheetToExisting(local_styles)
 tksupport.install(b.getRoot()) # run the Twisted reactor within the root mainloop
 
-# Create initial App View
+lv = LoginView()
+lv.bind("<<Login>>", launch_app_view)
+lv.bind("<<Close_Window>>", lambda e: reactor.stop())
 
-lt = AppView()
-
-lt.bind("<<Close_Window>>", lambda e: reactor.stop())
-
-# Load Plugins
-
-plg_manage = PluginManager(b)
-for activePlugin in plg_manage.loadedPlugins:
-	lt.launcher_frame.addAppToLauncher(activePlugin.CONST_PLUGIN_NAME, None, activePlugin.ON_CLICK_METHOD)
 
 # Create Twisted network connection
 
