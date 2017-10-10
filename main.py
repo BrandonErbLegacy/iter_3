@@ -18,6 +18,8 @@ from local_config.main_styles import getStyles as local_styles
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientCreator
 
+import local_promises.required_promises #Just runs the local_promises code
+
 
 ### Network Execution Bindings ###
 
@@ -32,6 +34,7 @@ def twisted_connection_success(connectedProtocol):
 
 def launch_app_view(e=None):
 	# Create initial App View
+	lv.destroy()
 	lt = AppView()
 	lt.bind("<<Close_Window>>", lambda e: reactor.stop())
 	# Load Plugins
@@ -39,8 +42,9 @@ def launch_app_view(e=None):
 	for activePlugin in plg_manage.loadedPlugins:
 		lt.launcher_frame.addAppToLauncher(activePlugin.CONST_PLUGIN_NAME, None, activePlugin.ON_CLICK_METHOD)
 
-def authenticate():
-	pass
+def authenticate(username, password):
+	Promises.execute("Iter_3_Authenticate", username=username, password=password,
+		success=launch_app_view, fail=lambda: print("Authentication failed."))
 
 Promises.setDefaultMode(mode="Client") #Set the PromiseManager to execute promises on client mode by default
 setTwistedPromiseManager(Promises) #Bind the PromiseManager to our twisted protocol
@@ -50,7 +54,7 @@ b.addStyleSheetToExisting(local_styles)
 tksupport.install(b.getRoot()) # run the Twisted reactor within the root mainloop
 
 lv = LoginView()
-lv.bind("<<Login>>", launch_app_view)
+lv.bind("<<Login>>", lambda e: authenticate(lv.getUsername(), lv.getPassword()))
 lv.bind("<<Close_Window>>", lambda e: reactor.stop())
 
 

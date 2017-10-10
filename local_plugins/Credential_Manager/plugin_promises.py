@@ -1,4 +1,5 @@
 from local_api.network.twisted_promises import Promises, Promise
+from local_promises.required_promises import AuthenticatePromise
 from local_api.file.dbobjects import GlobalDatabaseHandler
 from getpass import getpass
 from uuid import uuid4
@@ -71,6 +72,7 @@ class Credential_Manager_Update_Credential(Promise):
 
 
 class Credential_Manager_Get_Credential_ID_List(Promise):
+	@AuthenticatePromise
 	def clientAction(self, **kw):
 		load_data_func = kw["func"]
 		self._register.executeRemotePromise("Credential_Manager_Get_Credential_ID_List")
@@ -78,6 +80,7 @@ class Credential_Manager_Get_Credential_ID_List(Promise):
 			load_data_func(data)
 		self._register.fetchDataFromBuffer("CREDENTIAL_LIST", received_data)
 
+	@AuthenticatePromise
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
 		session = GlobalDatabaseHandler.createNewSession()

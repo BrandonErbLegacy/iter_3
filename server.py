@@ -1,17 +1,18 @@
 import sys
 sys.path.insert(0, r"C:\Users\Brandon\OneDrive\xbm_ui")
 
-from local_api.network.twisted_v3 import PromiseExecutionServerFactory, setTwistedPromiseManager
+from local_api.network.twisted_v3 import PromiseExecutionServerFactory, setTwistedPromiseManager, PORT, HOST
 from twisted.internet import reactor
 from local_api.plugin.loader import PluginManager
 
 from local_api.network.twisted_promises import Promises
 
-from local_api.network.twisted_classes import PORT, HOST
-
 from local_api.file.dbobjects import DatabaseBase, GlobalDatabaseHandler
 
 from threading import Thread
+
+import local_promises.required_promises #Just runs the local_promises code
+
 #Temporary
 
 setTwistedPromiseManager(Promises)

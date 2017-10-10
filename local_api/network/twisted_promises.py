@@ -35,7 +35,6 @@ class TwistedPromiseManager(PromiseManager):
 			print("There is no connected protocol!")
 
 	def executeRemotePromise(self, promiseName):
-		print("Executing promise...")
 		if self._connected_protocol != None:
 			self._connected_protocol.executeRemotePromise(promiseName)
 		else:

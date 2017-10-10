@@ -15,7 +15,6 @@ HOST = 'localhost'
 global TWISTED_DEFINED_PROMISE_MANAGER
 
 def setTwistedPromiseManager(mgr):
-	print(mgr)
 	global TWISTED_DEFINED_PROMISE_MANAGER
 	TWISTED_DEFINED_PROMISE_MANAGER = mgr
 
@@ -29,8 +28,9 @@ class DataBufferObject:
 	def __init__(self, id):
 		self._GIVEN_ID = id
 		self._UNIQUE_ID = uuid4()
+		self._RETURN_CALLS = []
 
-		print("Data Buffer Object created for ID: %s"%self._GIVEN_ID)
+		#print("Data Buffer Object created for ID: %s"%self._GIVEN_ID)
 
 	def setData(self, data):
 		self._DATA = data
@@ -39,10 +39,11 @@ class DataBufferObject:
 		return self._DATA
 
 	def finalizedData(self):
-		print("Finalizing return calls (%i calls)"%len(self._RETURN_CALLS))
+		#print("Finalizing return calls (%i calls)"%len(self._RETURN_CALLS))
 		for func in self._RETURN_CALLS:
 			func(self.getData())
-		print("Calls finalized")
+		#print("Calls finalized")
+		self._RETURN_CALLS = []
 
 	def addReturnCall(self, func):
 		self._RETURN_CALLS.append(func)
@@ -105,13 +106,17 @@ class PromiseExecutionProtocol(NetstringReceiver):
 	def stringReceived(self, string):
 		dataObject = pickle.loads(string)
 		print("Data string ID: %s"%dataObject._GIVEN_ID)
-		print(dataObject._TYPE)
+		#print(dataObject._TYPE)
 		if dataObject.isData():
 			self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
 			if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS.keys():
 				for func in self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]:
 					dataObject.addReturnCall(func)
 			self._DATA_BUFFER[dataObject._GIVEN_ID].finalizedData()
+			## Data is consumed. Remove data from _DATA_BUFFER and return calls from _EMPTY_RETURN_CALLS
+			#del self._DATA_BUFFER[dataObject._GIVEN_ID]
+			#if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS:
+			#	del self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]
 		elif dataObject.isPromise():
 			self._PROMISE_MANAGER.execute(dataObject._GIVEN_ID, NODE=self)
 
