@@ -51,6 +51,9 @@ class DataBufferObject:
 	def setFinished(self, bool):
 		self._FINISHED = bool
 
+	def isFinished(self):
+		return self._FINISHED
+
 	def setType(self, type="DATA"):
 		if type not in ["DATA", "PROMISE"]:
 			type = "DATA" #Default to data if not DATA or PROMISE
@@ -112,7 +115,12 @@ class PromiseExecutionProtocol(NetstringReceiver):
 			if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS.keys():
 				for func in self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]:
 					dataObject.addReturnCall(func)
-			self._DATA_BUFFER[dataObject._GIVEN_ID].finalizedData()
+				self._DATA_BUFFER[dataObject._GIVEN_ID].finalizedData()
+			else:
+				print("No ID for buffer")
+				dataObject.setFinished(True)
+				self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
+
 			## Data is consumed. Remove data from _DATA_BUFFER and return calls from _EMPTY_RETURN_CALLS
 			#del self._DATA_BUFFER[dataObject._GIVEN_ID]
 			#if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS:
@@ -132,11 +140,14 @@ class PromiseExecutionProtocol(NetstringReceiver):
 	def fetchDataFromBuffer(self, id, func):
 		if id in self._DATA_BUFFER.keys():
 			self._DATA_BUFFER[id].addReturnCall(func)
+			if self._DATA_BUFFER[id].isFinished():
+				self._DATA_BUFFER[id].finalizedData()
 		else:
 			if id in self._EMPTY_RETURN_CALLS.keys():
 				self._EMPTY_RETURN_CALLS[id].append(func)
 			else:
 				self._EMPTY_RETURN_CALLS[id] = [func]
+
 
 	def executeRemotePromise(self, promiseName):
 		self.sendData(promiseName)
