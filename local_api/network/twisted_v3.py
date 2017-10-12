@@ -122,9 +122,9 @@ class PromiseExecutionProtocol(NetstringReceiver):
 				self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
 
 			## Data is consumed. Remove data from _DATA_BUFFER and return calls from _EMPTY_RETURN_CALLS
-			#del self._DATA_BUFFER[dataObject._GIVEN_ID]
-			#if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS:
-			#	del self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]
+			del self._DATA_BUFFER[dataObject._GIVEN_ID]
+			if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS:
+				del self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]
 		elif dataObject.isPromise():
 			self._PROMISE_MANAGER.execute(dataObject._GIVEN_ID, NODE=self)
 

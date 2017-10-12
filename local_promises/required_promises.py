@@ -19,8 +19,10 @@ class Iter_3_Authenticate(Promise):
         user.password = password
         self._register.executeRemotePromise("Iter_3_Authenticate")
         self._register.sendData("USER_CREDENTIAL", user)
+        print("Sent credential")
 
         def authentication(result):
+            print("Got result, ", result)
             if result == False:
                 fail()
             else:
@@ -28,6 +30,7 @@ class Iter_3_Authenticate(Promise):
                 success(result)
 
         self._register.fetchDataFromBuffer("USER_CREDENTIAL", authentication)
+        print("Waiting for result")
 
     def serverAction(self, **kw):
         local_node = kw["NODE"]
