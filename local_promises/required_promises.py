@@ -19,10 +19,10 @@ class Iter_3_Authenticate(Promise):
 		user.password = password
 		self._register.executeRemotePromise("Iter_3_Authenticate")
 		self._register.sendData("USER_CREDENTIAL", user)
-		print("Sent credential")
+		#print("Sent credential")
 
 		def authentication(result):
-			print("Got result, ", result)
+			#print("Got result, ", result)
 			if result == False:
 				fail()
 			else:
@@ -30,7 +30,7 @@ class Iter_3_Authenticate(Promise):
 				success(result)
 
 		self._register.fetchDataFromBuffer("USER_CREDENTIAL", authentication)
-		print("Waiting for result")
+		#print("Waiting for result")
 
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
@@ -107,11 +107,11 @@ class Iter_3_Authenticate_Session_ID(Promise):
 			sessionObject = dbSession.query(Session).filter(Session.id == sessionID).one()
 			currentPeerIP = local_node.transport.getPeer().host
 			if (currentPeerIP == sessionObject.addressIssued):
-				print("Authentication success")
+				#print("Authentication success")
 				local_node.sendData("AUTHENTICATION_SESSION_ID_SUCCESS", True)
 				success()
 			else:
-				print("Authentication fail")
+				#print("Authentication fail")
 				fail()
 				local_node.sendData("AUTHENTICATION_SESSION_ID_SUCCESS", False)
 		local_node.fetchDataFromBuffer("AUTHENTICATION_SESSION_ID", validateSessionID)
@@ -140,10 +140,11 @@ class AuthenticatePromise(object):
 			returnVal = self.func(obj, **kwargs)
 		def server_fail():
 			print("Potential attempted session hijacking.")
-		obj._register.executeRemotePromise(obj.__class__.__name__)
 		if local_node:
 			Promises.execute("Iter_3_Authenticate_Session_ID", NODE=local_node, success=server_success, fail=server_fail)
 		else:
+			obj._register.executeRemotePromise(obj.__class__.__name__)
+			#print("Sending remote activate for %s"%obj.__class__.__name__)
 			Promises.execute("Iter_3_Authenticate_Session_ID", success=success, fail=fail)
 
 		#return returnVal

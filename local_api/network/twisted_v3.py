@@ -108,22 +108,23 @@ class PromiseExecutionProtocol(NetstringReceiver):
 
 	def stringReceived(self, string):
 		dataObject = pickle.loads(string)
-		#print("Data string ID: %s"%dataObject._GIVEN_ID)
+		#print("Data string ID: %s (%s)"%(dataObject._GIVEN_ID, dataObject._TYPE))
 		if dataObject.isData():
 			self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
 			if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS.keys():
 				for func in self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]:
 					dataObject.addReturnCall(func)
 				self._DATA_BUFFER[dataObject._GIVEN_ID].finalizedData()
+				## Data is consumed. Remove data from _DATA_BUFFER and return calls from _EMPTY_RETURN_CALLS
+				del self._DATA_BUFFER[dataObject._GIVEN_ID]
+				if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS:
+					del self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]
 			else:
 				#print("No ID for buffer")
 				dataObject.setFinished(True)
 				self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
 
-			## Data is consumed. Remove data from _DATA_BUFFER and return calls from _EMPTY_RETURN_CALLS
-			del self._DATA_BUFFER[dataObject._GIVEN_ID]
-			if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS:
-				del self._EMPTY_RETURN_CALLS[dataObject._GIVEN_ID]
+
 		elif dataObject.isPromise():
 			self._PROMISE_MANAGER.execute(dataObject._GIVEN_ID, NODE=self)
 
