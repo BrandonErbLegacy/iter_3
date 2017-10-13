@@ -1,5 +1,6 @@
 from local_api.network.twisted_promises import Promises, Promise
 from local_promises.required_promises import AuthenticatePromise
+from local_objects.required_objects import Session
 from local_api.file.dbobjects import GlobalDatabaseHandler
 from getpass import getpass
 from uuid import uuid4
@@ -7,6 +8,7 @@ from uuid import uuid4
 from local_plugins.Credential_Manager.plugin_objects import Credential
 
 class Credential_Manager_Create_Credential(Promise):
+	@AuthenticatePromise
 	def clientAction(self, username, password, target, notes, displayName):
 		#The below triggers the server to execute
 		self._register.executeRemotePromise("Credential_Manager_Create_Credential")
@@ -16,11 +18,12 @@ class Credential_Manager_Create_Credential(Promise):
 		cred.target = target
 		cred.notes = notes
 		cred.displayName = displayName
-		cred.id = str(uuid4())
-
+		cred.permissionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+		print("Sending %s sessionID "%cred.permissionID)
 		self._register.sendData("NEW_CREDENTIAL", cred)
 
 	def commandLineAction(self, session):
+		raise NotImplemented("This is not intended to be used. It's deprecated")
 		print("--")
 		username = input("Credential Username: ")
 		password = getpass("Credential Password: ")
@@ -39,15 +42,29 @@ class Credential_Manager_Create_Credential(Promise):
 		print("--")
 		print("Creation success!")
 
+	@AuthenticatePromise
 	def serverAction(self, **kw):
 		#print("Received activation record. Activating...")
 		local_node = kw["NODE"]
+		session = GlobalDatabaseHandler.createNewSession()
 		def fetchData(newCred):
 			newCred.id = str(uuid4())
-			GlobalDatabaseHandler.addObject(newCred)
+			sessionID = newCred.permissionID
+			newCred.permissionID = str(uuid4())
+			#Retrieve userID by authentication_id
+			try:
+				sessionObject = session.query(Session).filter(Session.id == sessionID).one()
+				newCred.createdByID = sessionObject.userID
+			except:
+				print("There was an error processing this command.")
+
+
+			GlobalDatabaseHandler.addObject(newCred, session)
+			GlobalDatabaseHandler.saveSession(session)
 		local_node.fetchDataFromBuffer("NEW_CREDENTIAL", fetchData)
 
 class Credential_Manager_Update_Credential(Promise):
+	@AuthenticatePromise
 	def clientAction(self, **kw):
 		cred = kw["credential"]
 		if (cred.id != None and len(cred.id) == 36):
@@ -55,9 +72,10 @@ class Credential_Manager_Update_Credential(Promise):
 			self._register.sendData("UPDATE_CREDENTIAL", cred)
 		else:
 			self._register.executeRemotePromise("Credential_Manager_Create_Credential")
+			cred.permissionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
 			self._register.sendData("NEW_CREDENTIAL", cred)
 
-
+	@AuthenticatePromise
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
 		session = GlobalDatabaseHandler.createNewSession()
@@ -70,10 +88,10 @@ class Credential_Manager_Update_Credential(Promise):
 			cred.target = uCred.target
 		self._register.fetchData("UPDATE_CREDENTIAL", updateCred)
 
-
 class Credential_Manager_Get_Credential_ID_List(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
+		print("Sending list request")
 		load_data_func = kw["func"]
 		self._register.executeRemotePromise("Credential_Manager_Get_Credential_ID_List")
 		def received_data(data):

@@ -14,5 +14,5 @@ class Session(DatabaseBase):
 	__tablename__ = "Sessions"
 
 	id = Column(String(36), primary_key=True)
-	userID = Column(String)
+	userID = Column(String(36))
 	addressIssued = Column(String)
