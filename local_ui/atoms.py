@@ -34,12 +34,12 @@ class AppLaunchingIcon(Frame):
 		self.textVar.set(text)
 
 class NetworkConnectedWindow(Window):
-	def __init__(self, client):
+	def __init__(self):
 		Window.__init__(self)
 		#TODO: Add triggers to bind client to discon & recon events
 
-	def disconnected(self):
+	def network_connection_disconnected(self):
 		print("Trigger disconnected window")
 
-	def reconnected(self):
+	def network_connection_reconnected(self):
 		print("Trigger reconnection of window")

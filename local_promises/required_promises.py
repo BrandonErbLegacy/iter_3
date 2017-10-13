@@ -104,13 +104,16 @@ class Iter_3_Authenticate_Session_ID(Promise):
 		fail = kw["fail"]
 		dbSession = GlobalDatabaseHandler.createNewSession()
 		def validateSessionID(sessionID):
-			sessionObject = dbSession.query(Session).filter(Session.id == sessionID).one()
-			currentPeerIP = local_node.transport.getPeer().host
-			if (currentPeerIP == sessionObject.addressIssued):
-				#print("Authentication success")
-				local_node.sendData("AUTHENTICATION_SESSION_ID_SUCCESS", True)
-				success()
-			else:
+			try:
+				sessionObject = dbSession.query(Session).filter(Session.id == sessionID).one()
+				currentPeerIP = local_node.transport.getPeer().host
+				if (currentPeerIP == sessionObject.addressIssued):
+					#print("Authentication success")
+					local_node.sendData("AUTHENTICATION_SESSION_ID_SUCCESS", True)
+					success()
+				else:
+					raise NoResultFound("")
+			except NoResultFound:
 				#print("Authentication fail")
 				fail()
 				local_node.sendData("AUTHENTICATION_SESSION_ID_SUCCESS", False)
