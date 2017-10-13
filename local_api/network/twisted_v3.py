@@ -108,8 +108,7 @@ class PromiseExecutionProtocol(NetstringReceiver):
 
 	def stringReceived(self, string):
 		dataObject = pickle.loads(string)
-		print("Data string ID: %s"%dataObject._GIVEN_ID)
-		#print(dataObject._TYPE)
+		#print("Data string ID: %s"%dataObject._GIVEN_ID)
 		if dataObject.isData():
 			self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
 			if dataObject._GIVEN_ID in self._EMPTY_RETURN_CALLS.keys():
@@ -117,7 +116,7 @@ class PromiseExecutionProtocol(NetstringReceiver):
 					dataObject.addReturnCall(func)
 				self._DATA_BUFFER[dataObject._GIVEN_ID].finalizedData()
 			else:
-				print("No ID for buffer")
+				#print("No ID for buffer")
 				dataObject.setFinished(True)
 				self._DATA_BUFFER[dataObject._GIVEN_ID] = dataObject
 

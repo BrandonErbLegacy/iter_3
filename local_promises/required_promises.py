@@ -90,23 +90,21 @@ class Iter_3_Authenticate_Session_ID(Promise):
 		success = kw["success"]
 		fail = kw["fail"]
 		def valid(returnVal):
-			print("Received: ", returnVal)
 			if returnVal:
 				success()
 			else:
 				fail()
 
 		self._register.sendData("AUTHENTICATION_SESSION_ID", sessionID)
-		print("Sent ID")
 		self._register.fetchDataFromBuffer("AUTHENTICATION_SESSION_ID_SUCCESS", valid)
-		print("Waiting for success")
 
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
 		success = kw["success"]
 		fail = kw["fail"]
+		dbSession = GlobalDatabaseHandler.createNewSession()
 		def validateSessionID(sessionID):
-			sessionObject = session.query(Session).filter(Session.id == sessionID).one()
+			sessionObject = dbSession.query(Session).filter(Session.id == sessionID).one()
 			currentPeerIP = local_node.transport.getPeer().host
 			if (currentPeerIP == sessionObject.addressIssued):
 				print("Authentication success")
@@ -125,11 +123,9 @@ class AuthenticatePromise(object):
 
 	def __get__(self, obj, objtype):
 		"""Support instance methods."""
-		print("Get called")
 		return partial(self.__call__, obj)
 
 	def __call__(self, obj, *args, **kwargs):
-		print("Getting called.")
 		try:
 			local_node = kwargs["NODE"]
 		except KeyError:
@@ -144,12 +140,10 @@ class AuthenticatePromise(object):
 			returnVal = self.func(obj, **kwargs)
 		def server_fail():
 			print("Potential attempted session hijacking.")
-
+		obj._register.executeRemotePromise(obj.__class__.__name__)
 		if local_node:
-			print("server exec")
 			Promises.execute("Iter_3_Authenticate_Session_ID", NODE=local_node, success=server_success, fail=server_fail)
 		else:
-			print("client exec")
 			Promises.execute("Iter_3_Authenticate_Session_ID", success=success, fail=fail)
 
 		#return returnVal
