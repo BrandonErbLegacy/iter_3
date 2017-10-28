@@ -1,4 +1,4 @@
-from common_ui.atoms import Frame, Entry, Label, Button, Window
+from common_ui.atoms import Frame, Entry, Label, Button, Window, Text
 from local_api.network.twisted_promises import Promises
 
 ###############################
@@ -101,12 +101,18 @@ class NotebookWindow(Window):
 		self.notebookTitle = NotebookTitle(self.contentFrame)
 		self.notebookTitle.pack(side="top", fill="x", padx=5, pady=5)
 
+		self.notebookPageContentHolder = Text(self.contentFrame)
+		self.notebookPageContentHolder.pack(fill="both", expand=True)
+
 		self.bind("<<Close_Window>>", self.close_window)
 
 		self.focus()
 
+		self.notebookTabManager.setContentHolder(self.notebookPageContentHolder)
+		self.notebookTabManager.setNotebookTitleWidget(self.notebookTitle)
 
 	def addNotebookPage(self, notebookPage):
+		print(notebookPage)
 		self.notebookTabManager.addNotebookPage(notebookPage)
 
 	def createNewNotebookPage(self):
@@ -114,6 +120,7 @@ class NotebookWindow(Window):
 
 	def setNotebookObject(self, notebookObject):
 		self.__NOTEBOOK_OBJECT__ = notebookObject
+		self.notebookTitle.setNotebookTitle(notebookObject.title)
 
 	def setNotebookPages(self, notebookPageList):
 		self.__NOTEBOOK_PAGES__ = notebookPageList
@@ -123,8 +130,10 @@ class NotebookWindow(Window):
 	def close_window(self, e=None):
 		self.destroy()
 
-
 class NotebookTabManager(Frame):
+	__NOTEBOOK_CONTENT_HOLDER__ = None
+	__NOTEBOOK_TITLE_WIDGET__ = None
+	__LOADED_FIRST__ = False
 	def __init__(self, master, **kw):
 		Frame.__init__(self, master, **kw)
 
@@ -133,9 +142,24 @@ class NotebookTabManager(Frame):
 		self.addNotebookPageButton = Button(self, text="+")
 		self.addNotebookPageButton.pack(side="bottom", fill="x")
 
+	def setContentHolder(self, contentHolder):
+		self.__NOTEBOOK_CONTENT_HOLDER__ = contentHolder
+
+	def setNotebookTitleWidget(self, widget):
+		self.__NOTEBOOK_TITLE_WIDGET__ = widget
+
+	def swapToPage(self, widget, page):
+		self.__NOTEBOOK_CONTENT_HOLDER__.delete("0.0", "end")
+		self.__NOTEBOOK_CONTENT_HOLDER__.insert("0.0", page.content)
+		self.__NOTEBOOK_TITLE_WIDGET__.setNotebookPageTitle(page.title)
+
 	def addNotebookPage(self, notebookPage):
 		page = Button(self, text=notebookPage.title)
-		page.pack(side="top")
+		page["command"] = lambda page=page, v=notebookPage: self.swapToPage(page, v)
+		page.pack(side="top", fill="x", pady=1)
+		if self.__LOADED_FIRST__ == False:
+			page.invoke()
+			self.__LOADED_FIRST__ = True
 
 class NotebookTitle(Frame):
 	def __init__(self, master, **kw):
@@ -143,21 +167,57 @@ class NotebookTitle(Frame):
 
 		self.className = "Frame"
 
-		self.notebookTitle = Entry(self)
+		self.notebookTitle = SaveOnFocusLeaveEntry(self)
 		self.notebookTitle.className = "Notebook_Title"
 		self.notebookTitle.pack(side="left", padx=5, pady=5, ipadx=5, ipady=5)
+		self.notebookTitle.bind("<<Save_On_Focus_Out>>", self.saveNotebookTitleChange)
 
 		self.notebookTitleSeparator = Label(self, text=":")
 		self.notebookTitleSeparator.pack(side="left")
 
-		self.notebookPageTitle = Entry(self)
+		self.notebookPageTitle = SaveOnFocusLeaveEntry(self)
 		self.notebookPageTitle.className = "Notebook_Title"
 		self.notebookPageTitle.pack(side="left", fill="x", expand=True, padx=5, pady=5, ipadx=5, ipady=5)
+		self.notebookPageTitle.bind("<<Save_On_Focus_Out>>", self.saveNotebookPageTitleChange)
 
 	def setNotebookTitle(self, title):
-		self.notebookTitle.delete("0.0", "end")
-		self.notebookTitle.insert("0.0", title)
+		self.notebookTitle.delete("0", "end")
+		self.notebookTitle.insert("0", title)
 
 	def setNotebookPageTitle(self, title):
-		self.notebookPageTitle.delete("0.0", "end")
-		self.notebookPageTitle.insert("0.0", title)
+		self.notebookPageTitle.delete("0", "end")
+		self.notebookPageTitle.insert("0", title)
+
+	def saveNotebookTitleChange(self, event):
+		print("Request to save title")
+
+	def saveNotebookPageTitleChange(self, event):
+		print("Request to save notebook page title")
+
+class HighlightableEntry(Entry):
+	def __init__(self, master, **kw):
+		Entry.__init__(self, master, **kw)
+
+		self.className = "Notebook_Title_Entry.Inactive"
+
+		self.bind("<FocusIn>", self._highlightWidget)
+		self.bind("<FocusOut>", self._unhighlightWidget)
+
+	def _highlightWidget(self, e):
+		self.className = "Notebook_Title_Entry.Active"
+
+	def _unhighlightWidget(self, e):
+		self.className = "Notebook_Title_Entry.Inactive"
+
+class SaveOnFocusLeaveEntry(HighlightableEntry):
+	def __init__(self, master, **kw):
+		HighlightableEntry.__init__(self, master, **kw)
+		self.bind("<FocusIn>", self._triggerHighlight)
+		self.bind("<FocusOut>", self._triggerUnhighlight)
+
+	def _triggerHighlight(self, e):
+		self._highlightWidget(e)
+
+	def _triggerUnhighlight(self, e):
+		self.event_generate("<<Save_On_Focus_Out>>")
+		self._unhighlightWidget(e)

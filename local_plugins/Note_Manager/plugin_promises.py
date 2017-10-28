@@ -29,6 +29,7 @@ class Note_Manager_List_Notes(Promise):
 			if userID != None:
 				notebooks = dbSession.query(Notebook).filter(Notebook.createdByID == userID).all()
 				local_node.sendData("NOTE_MANAGER_LIST", notebooks)
+				dbSession.close()
 			else:
 				return
 
@@ -70,11 +71,13 @@ class Note_Manager_Create_Notebook(Promise):
 				newNotebookPageDefault.notebook_id = newNotebookID
 				newNotebookPageDefault.title = "N"
 
+				local_node.sendData("NEW_NOTEBOOK_AND_PAGE", (newNotebook, newNotebookPageDefault))
+
 				GlobalDatabaseHandler.addObject(newNotebook, dbSession)
 				GlobalDatabaseHandler.addObject(newNotebookPageDefault, dbSession)
 				GlobalDatabaseHandler.saveSession(dbSession)
 
-				local_node.sendData("NEW_NOTEBOOK_AND_PAGE", (newNotebook, newNotebookPageDefault))
+				dbSession.close()
 			else:
 				return
 		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
@@ -98,6 +101,7 @@ class Note_Manager_Get_Notebook_Pages(Promise):
 			filter(NotebookPage.createdByID == userID).all()
 			print(notebookPages)
 			local_node.sendData("NOTEBOOK_PAGES", notebookPages)
+			dbSession.close()
 
 		def receivedUserSession(sessionID):
 			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))

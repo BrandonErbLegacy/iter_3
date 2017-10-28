@@ -15,4 +15,10 @@ def getStyles():
 
 	tree["Notebook_Title"]["font"] = (50)
 
+	tree["Notebook_Title_Entry.Active"]["background"] = STYLE_CONFIG["secondary_color"]
+	tree["Notebook_Title_Entry.Inactive"]["background"] = STYLE_CONFIG["tertiary_color"]
+	tree["Notebook_Title_Entry.Inactive"]["foreground"] = STYLE_CONFIG["text_color"]
+	tree["Notebook_Title_Entry.Inactive"]["insertbackground"] = STYLE_CONFIG["text_color"]
+	tree["Notebook_Title_Entry.Inactive"]["relief"] = "flat"
+
 	return tree
