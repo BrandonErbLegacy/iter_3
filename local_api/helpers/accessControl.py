@@ -10,7 +10,7 @@ def getUserBySession(sessionID, dbSession, ip):
 		else:
 			print("Possible session hijack. IP Mismatch (%s != %s)"%(ip, sessionObject.addressIssued))
 			return None
-	except:
+	except ArithmeticError:
 		print("Encountered Error in getUserBySession")
 		return None
 

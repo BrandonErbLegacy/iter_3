@@ -17,7 +17,8 @@ class NotebookPage(DatabaseBase):
 	notebook_id = Column(String(36))
 	createdByID = Column(String(36))
 	permissionID = Column(String(36))
-	content = Column(String(36))
+	content = Column(String)
+	title = Column(String(5))
 
 class NoteCategory(DatabaseBase):
 	__tablename__ = "Note_Manager_Plugin_Note_Category"

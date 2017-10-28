@@ -5,7 +5,7 @@ from local_api.file.dbobjects import GlobalDatabaseHandler
 from getpass import getpass
 from uuid import uuid4
 
-from local_plugins.Note_Manager.plugin_objects import Notebook, NoteCategory, NoteCategory_Note_Relation
+from local_plugins.Note_Manager.plugin_objects import Notebook, NoteCategory, NoteCategory_Note_Relation, NotebookPage
 
 from local_api.helpers.accessControl import getUserBySession, getPeerIP
 
@@ -40,12 +40,14 @@ class Note_Manager_List_Notes_By_Multiple_Category_ID(Promise):
 	pass
 
 class Note_Manager_Create_Notebook(Promise):
+	@AuthenticatePromise
 	def clientAction(self, **kw):
 		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
 		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
 
 		self._register.fetchDataFromBuffer("NEW_NOTEBOOK_AND_PAGE", lambda data: kw["func"](data))
 
+	@AuthenticatePromise
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
 		dbSession = GlobalDatabaseHandler.createNewSession()
@@ -66,6 +68,7 @@ class Note_Manager_Create_Notebook(Promise):
 				newNotebookPageDefault.createdByID = userID
 				newNotebookPageDefault.content = "New Page"
 				newNotebookPageDefault.notebook_id = newNotebookID
+				newNotebookPageDefault.title = "N"
 
 				GlobalDatabaseHandler.addObject(newNotebook, dbSession)
 				GlobalDatabaseHandler.addObject(newNotebookPageDefault, dbSession)
@@ -74,7 +77,34 @@ class Note_Manager_Create_Notebook(Promise):
 				local_node.sendData("NEW_NOTEBOOK_AND_PAGE", (newNotebook, newNotebookPageDefault))
 			else:
 				return
+		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
 
+class Note_Manager_Get_Notebook_Pages(Promise):
+	@AuthenticatePromise
+	def clientAction(self, **kw):
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
+		self._register.sendData("NOTEBOOK_ID", kw["notebookID"])
+
+		self._register.fetchDataFromBuffer("NOTEBOOK_PAGES", lambda data: kw["func"](data))
+
+	@AuthenticatePromise
+	def serverAction(self, **kw):
+		local_node = kw["NODE"]
+		dbSession = GlobalDatabaseHandler.createNewSession()
+
+		def receivedNotebookID(userID, NotebookID):
+			notebookPages = dbSession.query(NotebookPage).filter(NotebookPage.notebook_id == NotebookID).\
+			filter(NotebookPage.createdByID == userID).all()
+			print(notebookPages)
+			local_node.sendData("NOTEBOOK_PAGES", notebookPages)
+
+		def receivedUserSession(sessionID):
+			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
+			if userID != None:
+				local_node.fetchDataFromBuffer("NOTEBOOK_ID", lambda data: receivedNotebookID(userID, data))
+			else:
+				return
 		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
 
 class Note_Manager_Update_Note(Promise):
@@ -100,3 +130,4 @@ class Note_Manager_Delete_Category(Promise):
 
 Promises.register(Note_Manager_List_Notes())
 Promises.register(Note_Manager_Create_Notebook())
+Promises.register(Note_Manager_Get_Notebook_Pages())

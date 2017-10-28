@@ -13,4 +13,6 @@ def getStyles():
 
 	tree["Heading_Label"]["font"] = (50)
 
+	tree["Notebook_Title"]["font"] = (50)
+
 	return tree

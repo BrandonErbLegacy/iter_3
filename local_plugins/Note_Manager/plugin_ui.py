@@ -14,14 +14,14 @@ class NoteManagerWindow(Window):
 		self.noteSearchPanel.pack(fill="both", expand=True, side="left")
 
 		self.categorySearchPanel = CategorySearchPanel(self)
-		self.categorySearchPanel.pack(fill="y",side="right")
+		self.categorySearchPanel.pack(fill="y", side="right")
 
 		self.bind("<<Close_Window>>", self.close_window)
 
 		Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
 
 	def load_notebook_list(self, list):
-		print("Loading %i notebooks "%(len(list)))
+		#print("Loading %i notebooks "%(len(list)))
 		for item in list:
 			self.add_notebook(item)
 
