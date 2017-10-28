@@ -7,8 +7,10 @@ def getStyles():
 	tree["NotebookPanel"]["bg"] = STYLE_CONFIG["secondary_color"]
 	tree["NotebookPanel"]["width"] = 200
 
-	tree["SearchPanel_SearchEntry"]["font"] = (50)
+	#tree["SearchPanel_SearchEntry"]["font"] = (14)
 
 	tree["CategorySearchPanel"]["width"] = 400
+
+	tree["Heading_Label"]["font"] = (50)
 
 	return tree

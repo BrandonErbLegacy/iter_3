@@ -20,6 +20,9 @@ from twisted.internet.protocol import ClientCreator
 
 import local_promises.required_promises #Just runs the local_promises code
 
+DEBUG = 1
+DEBUG_USER = "admin"
+DEBUG_PASS = "admin"
 
 ### Network Execution Bindings ###
 
@@ -29,6 +32,8 @@ def twisted_connection_error(reason):
 def twisted_connection_success(connectedProtocol):
 	Promises.setExecutionStatus(True)
 	Promises.setConnectedProtocol(connectedProtocol)
+	if DEBUG:
+		authenticate(DEBUG_USER, DEBUG_PASS)
 
 ##################################
 
@@ -58,6 +63,7 @@ lv.bind("<<Login>>", lambda e: authenticate(lv.getUsername(), lv.getPassword()))
 lv.bind("<<Close_Window>>", lambda e: reactor.stop())
 
 
+
 # Create Twisted network connection
 
 twisted_connection_factory = PromiseExecutionClientFactory()
@@ -65,6 +71,7 @@ twisted_connection_factory = PromiseExecutionClientFactory()
 client_creator = ClientCreator(reactor, PromiseExecutionProtocol)
 when_connected = client_creator.connectTCP(HOST, PORT)
 when_connected.addCallbacks(twisted_connection_success, twisted_connection_error)
+
 
 #Start Reactor & tkinter mainloops (this does both)
 reactor.run()
