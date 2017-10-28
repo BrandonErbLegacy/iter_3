@@ -15,4 +15,5 @@ def getUserBySession(sessionID, dbSession, ip):
 		return None
 
 def getPeerIP(local_node):
+	"""Given a twisted connection object, return the Peer's IP addr"""
 	return local_node.transport.getPeer().host

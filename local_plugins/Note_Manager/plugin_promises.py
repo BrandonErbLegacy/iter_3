@@ -107,13 +107,23 @@ class Note_Manager_Get_Notebook_Pages(Promise):
 				return
 		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
 
-class Note_Manager_Update_Note(Promise):
+class Note_Manager_Create_Notebook_Page(Promise):
 	pass
 
-class Note_Manager_Delete_Note(Promise):
+class Note_Manager_Update_Notebook(Promise):
+	pass
+
+class Note_Manager_Delete_Notebook(Promise):
+	pass
+
+class Note_Manager_Update_Notebook_Page(Promise):
+	pass
+
+class Note_Manager_Delete_Notebook_Page(Promise):
 	pass
 
 class Note_Manager_Update_Category_Relation(Promise):
+	#Also adds category relations
 	pass
 
 class Note_Manager_List_Categories(Promise):
