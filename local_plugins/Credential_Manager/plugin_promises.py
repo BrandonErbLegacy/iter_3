@@ -7,6 +7,8 @@ from uuid import uuid4
 
 from local_plugins.Credential_Manager.plugin_objects import Credential
 
+from local_api.helpers.accessControl import getUserBySession, getPeerIP
+
 class Credential_Manager_Create_Credential(Promise):
 	@AuthenticatePromise
 	def clientAction(self, username, password, target, notes, displayName):
@@ -51,11 +53,12 @@ class Credential_Manager_Create_Credential(Promise):
 			sessionID = newCred.permissionID
 			newCred.permissionID = str(uuid4())
 			#Retrieve userID by authentication_id
-			try:
-				sessionObject = session.query(Session).filter(Session.id == sessionID).one()
-				newCred.createdByID = sessionObject.userID
-			except:
-				print("There was an error processing this command.")
+			userID = getUserBySession(sessionID, session, getPeerIP(local_node))
+			if (userID != None):
+				newCred.createdByID = userID
+			else:
+				print("Potential session jacking!!!")
+				return
 			GlobalDatabaseHandler.addObject(newCred, session)
 			GlobalDatabaseHandler.saveSession(session)
 		local_node.fetchDataFromBuffer("NEW_CREDENTIAL", fetchData)
@@ -102,16 +105,29 @@ class Credential_Manager_Get_Credential_ID_List(Promise):
 		load_data_func = kw["func"]
 		def received_data(data):
 			load_data_func(data)
+
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+
+		self._register.sendData("CREDENTIAL_GET_SESSION_ID", sessionID)
+
 		self._register.fetchDataFromBuffer("CREDENTIAL_LIST", received_data)
 
 	@AuthenticatePromise
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
-		session = GlobalDatabaseHandler.createNewSession()
-		# Ideally I'd like to use an existing session per plugin
-		#  but the framework just isn't ready for that.
-		allCreds = session.query(Credential).all()
-		local_node.sendData("CREDENTIAL_LIST", allCreds)
+
+		def getListByID(data):
+			session = GlobalDatabaseHandler.createNewSession()
+			userID = getUserBySession(data, session, getPeerIP(local_node))
+			if userID != None:
+				myCredentials = session.query(Credential).filter(Credential.createdByID == userID).all()
+				#sharedCredentials = session.query(Credential)
+				local_node.sendData("CREDENTIAL_LIST", myCredentials)
+			else:
+				print("USERID = None")
+				return
+
+		local_node.fetchDataFromBuffer("CREDENTIAL_GET_SESSION_ID", getListByID)
 
 
 Promises.register(Credential_Manager_Create_Credential())
