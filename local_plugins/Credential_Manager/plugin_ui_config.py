@@ -1,11 +1,11 @@
-from common_ui.tkx_bootstrap import createNewTree
-from common_config.tkx_default_config import STYLE_CONFIG
+from local_api.ui.base import Style
+from local_config.defaultStyles import STYLE_CONFIG
 
 def getStyles():
-	tree = createNewTree()
+	credPanel = Style("CredentialPanel")
+	credPanelLabel = Style("CredentialPanel.Label")
+	credPanelFrame = Style("CredentialPanel.Frame")
 
-	tree["CredentialPanel"]["bg"] = STYLE_CONFIG["secondary_color"]
-	tree["CredentialPanel.Label"]["bg"] = STYLE_CONFIG["secondary_color"]
-	tree["CredentialPanel.Frame"]["bg"] = STYLE_CONFIG["secondary_color"]
-
-	return tree
+	credPanel["bg"] = STYLE_CONFIG["secondary_color"]
+	credPanelLabel["bg"] = STYLE_CONFIG["secondary_color"]
+	credPanelFrame["bg"] = STYLE_CONFIG["secondary_color"]

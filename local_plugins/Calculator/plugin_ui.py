@@ -1,4 +1,4 @@
-from common_ui.atoms import Window, Frame, Button, Entry, SizedButton
+from local_api.ui.base import Window, Frame, Button, Entry, SizedButton
 
 class CalculatorWindow(Window):
 	def __init__(self):

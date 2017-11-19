@@ -1,4 +1,4 @@
-from common_ui.atoms import Window, Frame
+from local_api.ui.base import Window, Frame
 
 from local_plugins.Note_Manager.plugin_ui_framework import NoteSearchPanel, CategorySearchPanel
 

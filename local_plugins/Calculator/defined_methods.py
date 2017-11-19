@@ -2,8 +2,8 @@ from local_api.plugin.defined_methods import PluginLoader as plgOverload
 from local_plugins.Calculator.plugin_main import Main
 
 class PluginLoader(plgOverload):
-	def __init__(self):
-		plgOverload.__init__(self)
+	def __init__(self, side):
+		plgOverload.__init__(self, side)
 
 		self.runtimePluginClass = Main()
 

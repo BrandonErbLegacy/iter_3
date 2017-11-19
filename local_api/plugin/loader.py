@@ -18,6 +18,10 @@ class PluginManager:
 		self.validatePlugins(results)
 
 	def validatePlugins(self, p):
+		if self.bootstrap != None:
+			mode = "client"
+		else:
+			mode = "server"
 		for pluginPath in p:
 			try:
 				try:
@@ -28,9 +32,9 @@ class PluginManager:
 				pluginModuleSpec = importlib.util.spec_from_file_location(pluginModuleName, pluginPath)
 				pluginLoadedModule = importlib.util.module_from_spec(pluginModuleSpec)
 				pluginModuleSpec.loader.exec_module(pluginLoadedModule)
-				pluginLoaderOfPlugin = pluginLoadedModule.PluginLoader()
+				pluginLoaderOfPlugin = pluginLoadedModule.PluginLoader(mode)
+				#TODO: Add verbose error handling/logging here for when a plugin errors
 				self.loadedPlugins.append(pluginLoaderOfPlugin)
-
 				self.createSafeBindings(pluginLoaderOfPlugin)
 			except IOError:
 				self.unloadedPlugins.append(pluginPath)
@@ -40,4 +44,4 @@ class PluginManager:
 			plugin.ON_FIND_METHOD(None)
 		if plugin.UI_TREE_STYLES != None:
 			if self.bootstrap:
-				self.bootstrap.addStyleSheetToExisting(plugin.UI_TREE_STYLES)
+				self.bootstrap.loadStyle(plugin.UI_TREE_STYLES)

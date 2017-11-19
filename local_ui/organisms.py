@@ -1,4 +1,4 @@
-from common_ui.atoms import Frame, Button, Label
+from local_api.ui.base import Frame, Button, Label
 from tkinter import PhotoImage
 
 class AppLauncherFrame(Frame):

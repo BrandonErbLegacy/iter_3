@@ -1,4 +1,4 @@
-from common_ui.atoms import Window, Frame, Listbox, Button
+from local_api.ui.base import Window, Frame, Listbox, Button
 from .plugin_ui_framework import CredentialPanel
 from local_api.network.twisted_promises import Promises
 from local_ui.atoms import NetworkConnectedWindow

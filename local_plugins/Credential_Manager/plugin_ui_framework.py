@@ -1,4 +1,4 @@
-from common_ui.atoms import Frame, Label, Entry, Button, TitledFrame, Text
+from local_api.ui.base import Frame, Label, Entry, Button, TitledFrame, Text
 from local_plugins.Credential_Manager.plugin_objects import Credential
 
 class CredentialPanel(TitledFrame):

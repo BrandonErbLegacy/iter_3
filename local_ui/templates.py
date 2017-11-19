@@ -1,58 +1,12 @@
 #from tkinter import PhotoImage
 from PIL import Image, ImageTk
 
-from common_ui.atoms import Frame, Button
+from local_api.ui.base import Frame, Button
 
 from local_ui.atoms import AppLaunchingIcon
 from local_ui.organisms import AppLauncherFrame
 
 from local_config.mainSettings import DEFAULT_APP_LAUNCHER_ICON_WIDTH, DEFAULT_APP_LAUNCHER_ICON_HEIGHT
-
-class _AppLauncherFrame(Frame):
-	def __init__(self, master, **kw):
-		Frame.__init__(self, master, **kw)
-		self.className = "Frame"
-		#self.bind("<Configure>", self.onResize)
-
-		#self._CURRENT_ICONS_PER_ROW = 0
-		#self._CURRENT_ICONS_PER_COLUMN = 0
-
-		self._EXISTING_ICONS = []
-
-		#self._COMPUTED_SPOTS = {}
-
-		#self._NEXT_SPOT = (0,0)
-
-		self._GRID_X = 0
-		self._GRID_Y = 0
-
-	def createIcon(self, text, method=None):
-		print("Creating Icon with text %s"%text)
-		iconWidget = AppLaunchingIcon(self, height=DEFAULT_APP_LAUNCHER_ICON_HEIGHT, width=DEFAULT_APP_LAUNCHER_ICON_WIDTH)
-		iconWidget.setText(text)
-		self._EXISTING_ICONS.append(iconWidget)
-
-		self.placeIcon(iconWidget)
-
-		if method != None:
-			iconWidget.bind("<1>", method)
-
-	def placeIcon(self, iconWidget):
-		iconWidget.grid(column=self._GRID_X, row=self._GRID_Y, padx=5, pady=5)
-		self._GRID_X = self._GRID_X+1
-		if self._GRID_X > 5:
-			self._GRID_Y = self._GRID_Y+1
-			self._GRID_X = 0
-
-	def onResize(self, event):
-		#print("Resized to: %i x %i"%(event.width, event.height))
-		ICONS_PER_ROW = int(event.width/DEFAULT_APP_LAUNCHER_ICON_WIDTH)
-		ICONS_PER_COLUMN = int(event.height/DEFAULT_APP_LAUNCHER_ICON_HEIGHT)
-		print("Icons per row %i, Icons per column %i "%(ICONS_PER_ROW, ICONS_PER_COLUMN))
-
-		if ICONS_PER_ROW != self._CURRENT_ICONS_PER_ROW:
-			pass
-
 
 class HomeTemplate(Frame):
 	## This essentially is V2 of the first launcher

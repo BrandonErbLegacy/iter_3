@@ -6,15 +6,16 @@ from local_api.network.twisted_promises import Promises
 
 
 class PluginLoader(plgOverload):
-	def __init__(self):
-		plgOverload.__init__(self)
+	def __init__(self, side):
+		plgOverload.__init__(self, side)
 
 		self.runtimePluginClass = Main()
 
 		self.CONST_PLUGIN_NAME = "Credentials"
 		self.ON_LOAD_METHOD = self.ON_LOAD_ACTIVE
 		self.ON_CLICK_METHOD = self.ON_CLICK_ACTIVE
-		self.UI_TREE_STYLES = getStyles()
+		if side == "client":
+			self.UI_TREE_STYLES = getStyles()
 
 
 	def ON_CLICK_ACTIVE(self, event=None):

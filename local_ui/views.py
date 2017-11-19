@@ -1,5 +1,5 @@
-from common_ui.atoms import Window
-from common_ui.templates import LoginTemplate
+from local_api.ui.base import Window
+from local_api.ui.base import LoginTemplate
 from sys import platform
 
 ###
@@ -27,5 +27,3 @@ class AppView(Window):
 class LoginView(LoginTemplate):
 	def __init__(self):
 		LoginTemplate.__init__(self)
-
-		

@@ -1,8 +1,4 @@
-import sys
-sys.path.insert(0, r"C:\Users\Brandon\OneDrive\xbm_ui")
-
-from common_ui.tkx_bootstrap import Bootstrap
-from common_config.tkx_default_config import getStyles as main_styles
+from local_api.ui.base import Bootstrap
 #from common_api.promises.promises import Promises
 
 from local_api.plugin.loader import PluginManager
@@ -13,7 +9,7 @@ from local_api.network.twisted_promises import Promises
 #from common_ui.templates import LoginTemplate
 from local_ui.views import AppView, LoginView
 
-from local_config.main_styles import getStyles as local_styles
+from local_config.defaultStyles import do_style
 
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientCreator
@@ -54,8 +50,7 @@ def authenticate(username, password):
 Promises.setDefaultMode(mode="Client") #Set the PromiseManager to execute promises on client mode by default
 setTwistedPromiseManager(Promises) #Bind the PromiseManager to our twisted protocol
 b = Bootstrap()
-b.loadStyleSheet(main_styles())
-b.addStyleSheetToExisting(local_styles)
+do_style(b) #Apply styles
 tksupport.install(b.getRoot()) # run the Twisted reactor within the root mainloop
 
 lv = LoginView()

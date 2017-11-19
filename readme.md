@@ -16,3 +16,17 @@ Please keep in mind each of these is a feature rich application designed to work
 
 * Server based settings storage
 * Default global and local encryption for data
+
+
+--------------------------
+Pain points:
+ - CRUD functions feel repetitive
+ - Creating UI & hooking it up is time consuming
+   - This is a direct result of the UI/Network not having a clean connection
+   - Results are also a pain to pass back and forth
+ - Plugin system is a bit quirky
+
+
+Both of the above can be simply solved with better integration through the
+sqlAlchemy models. Eg a View models the data somehow, and has methods to interact with
+the server to manipulate the data

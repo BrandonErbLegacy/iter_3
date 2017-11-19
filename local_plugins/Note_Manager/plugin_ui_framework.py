@@ -1,4 +1,4 @@
-from common_ui.atoms import Frame, Entry, Label, Button, Window, Text
+from local_api.ui.base import Frame, Entry, Label, Button, Window, Text
 from local_api.network.twisted_promises import Promises
 
 ###############################
@@ -105,6 +105,7 @@ class NotebookWindow(Window):
 		self.notebookPageContentHolder.pack(fill="both", expand=True)
 
 		self.bind("<<Close_Window>>", self.close_window)
+		self.bind("<<Create_New_Notebook_Page>>", self.createNewNotebookPage)
 
 		self.focus()
 
@@ -112,11 +113,17 @@ class NotebookWindow(Window):
 		self.notebookTabManager.setNotebookTitleWidget(self.notebookTitle)
 
 	def addNotebookPage(self, notebookPage):
-		print(notebookPage)
 		self.notebookTabManager.addNotebookPage(notebookPage)
 
-	def createNewNotebookPage(self):
-		pass
+	def createNewNotebookPage(self, e=None):
+		notebookDialog = CreateNewNotebookPageWindow()
+		notebookDialog.bind("<<Generate_Notebook_Page>>", lambda e: self.execute_createNotebookPage(notebookDialog.getNotebookName()))
+		notebookDialog.bind("<<Close_Window>>", lambda e: notebookDialog.destroy())
+
+	def execute_createNotebookPage(self, notebookVal):
+		print("Creating new notebook page: %s"%notebookVal)
+		Promises.execute("Note_Manager_Create_Notebook_Page", returnFunc=lambda data:print(data),
+			notebookName=notebookVal)
 
 	def setNotebookObject(self, notebookObject):
 		self.__NOTEBOOK_OBJECT__ = notebookObject
@@ -139,8 +146,11 @@ class NotebookTabManager(Frame):
 
 		self.className = "Frame"
 
-		self.addNotebookPageButton = Button(self, text="+")
+		self.addNotebookPageButton = Button(self, text="+", command=self.createNewNotebookPage)
 		self.addNotebookPageButton.pack(side="bottom", fill="x")
+
+	def createNewNotebookPage(self, e=None):
+		self.event_generate("<<Create_New_Notebook_Page>>")
 
 	def setContentHolder(self, contentHolder):
 		self.__NOTEBOOK_CONTENT_HOLDER__ = contentHolder
@@ -221,3 +231,29 @@ class SaveOnFocusLeaveEntry(HighlightableEntry):
 	def _triggerUnhighlight(self, e):
 		self.event_generate("<<Save_On_Focus_Out>>")
 		self._unhighlightWidget(e)
+
+class CreateNewNotebookPageWindow(Window):
+	def __init__(self):
+		Window.__init__(self)
+
+		self.className = "Window"
+
+		self.geometry("200x100")
+
+		self.nameLabel = Label(self, text="Name")
+		self.nameEntry = Entry(self)
+
+		self.nameLabel.pack(fill="x", padx=5, pady=5)
+		self.nameEntry.pack(fill="x", padx=5, ipadx=5, ipady=5)
+
+		self.buttonFrame = Frame(self)
+		self.buttonFrame.pack(fill="x", padx=5, pady=5)
+
+		self.okButton = Button(self, text="Create!", command=lambda: self.event_generate("<<Generate_Notebook_Page>>"))
+		self.cancelButton = Button(self, text="Cancel", command=lambda: self.destroy())
+
+		self.okButton.pack(side="left", fill="x", expand=True, padx=5)
+		self.cancelButton.pack(side="right", fill="x", expand=True, padx=5)
+
+	def getNotebookName(self):
+		return self.nameEntry.get();

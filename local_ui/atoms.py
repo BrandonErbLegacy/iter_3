@@ -1,4 +1,4 @@
-from common_ui.atoms import Frame, Label, Window
+from local_api.ui.base import Frame, Label, Window
 from tkinter import StringVar
 
 class AppLaunchingIcon(Frame):
