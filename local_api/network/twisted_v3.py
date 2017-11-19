@@ -19,17 +19,13 @@ def setTwistedPromiseManager(mgr):
 	TWISTED_DEFINED_PROMISE_MANAGER = mgr
 
 class DataBufferObject:
-	_UNIQUE_ID = None
-	_GIVEN_ID = None
-	_DATA = None
-	_RETURN_CALLS = []
-	_FINISHED = False
-	_TYPE = "DATA"
 	def __init__(self, id):
 		self._GIVEN_ID = id
 		self._UNIQUE_ID = uuid4()
 		self._RETURN_CALLS = []
-
+		self._DATA = None
+		self._FINISHED = False
+		self._TYPE = "DATA"
 		#print("Data Buffer Object created for ID: %s"%self._GIVEN_ID)
 
 	def setData(self, data):
@@ -71,17 +67,19 @@ class DataBufferObject:
 		return False
 
 class PromiseExecutionProtocol(NetstringReceiver):
-	_STATE = None
-	_DATA_BUFFER = {}
-	_SERVER_TO_CLIENT_CONNS = []
-	_EMPTY_RETURN_CALLS = {}
 	_DESIRED_ENCODING = "utf-8"
-	_PROMISE_MANAGER = None
-
 	_PROMISE_FLAG = bytes("0".encode(_DESIRED_ENCODING))
 	_DATA_ID_FLAG = bytes("1".encode(_DESIRED_ENCODING))
 	_DATA_CONTENT_FLAG = bytes("2".encode(_DESIRED_ENCODING))
 	_DATA_FINISH_FLAG = bytes("3".encode(_DESIRED_ENCODING))
+
+	def __init__(self, **kw):
+		NetstringReceiver.__init__(self, **kw)
+		self._STATE = None
+		self._DATA_BUFFER = {}
+		self._SERVER_TO_CLIENT_CONNS = []
+		self._EMPTY_RETURN_CALLS = {}
+		self._PROMISE_MANAGER = None
 
 	def setPromiseManager(self, mgr):
 		if mgr == None:
@@ -155,6 +153,7 @@ class PromiseExecutionProtocol(NetstringReceiver):
 
 class PromiseExecutionServer(PromiseExecutionProtocol):
 	def __init__(self):
+		PromiseExecutionProtocol.__init__(self)
 		protocol.Protocol.__init__(self)
 		self.setState("server")
 		global TWISTED_DEFINED_PROMISE_MANAGER
@@ -165,6 +164,7 @@ class PromiseExecutionServerFactory(protocol.Factory):
 
 class PromiseExecutionClient(PromiseExecutionProtocol):
 	def __init__(self):
+		PromiseExecutionProtocol.__init__(self)
 		protocol.Protocol.__init__(self)
 		self.setState("client")
 		global TWISTED_DEFINED_PROMISE_MANAGER

@@ -12,6 +12,10 @@ from local_api.helpers.accessControl import getUserBySession, getPeerIP
 class Note_Manager_List_Notes(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
+		"""Takes 1 argument
+		func: The function to be executed once the notebooks have been listed
+		Returns a list of notebooks on the server
+		"""
 		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
 
 		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
@@ -43,6 +47,10 @@ class Note_Manager_List_Notes_By_Multiple_Category_ID(Promise):
 class Note_Manager_Create_Notebook(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
+		"""Takes 1 argument
+		func: The function to execute once a new page and notebook have been created
+		Returns the new page and notebook
+		"""
 		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
 		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
 
@@ -85,6 +93,11 @@ class Note_Manager_Create_Notebook(Promise):
 class Note_Manager_Get_Notebook_Pages(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
+		"""Takes 2 arguments.
+		notebookID: The ID of the notebook you're fetching pages from (UUID4)
+		func: The function to execute with the return data
+		Returns a list of notebook pages for the specified ID, or None
+		"""
 		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
 		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
 		self._register.sendData("NOTEBOOK_ID", kw["notebookID"])
@@ -113,40 +126,118 @@ class Note_Manager_Get_Notebook_Pages(Promise):
 class Note_Manager_Create_Notebook_Page(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
+		"""Takes 3 key args.
+		 notebookID: UUID4 of the desired notebook
+		 notebookTitle: String for the title
+		 func: The function to be executed with the completion status of the promise
+		 Returns: None if unsuccessful, or NotebookPage if successful"""
 		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
-		#notebookID = 
-		#notebookName = self._register.get
+		notebookID, notebookTitle = kw["notebookID"], kw["notebookTitle"]
 		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
-		self._register.sendData("NOTE_MANAGER_NOTEBOOK_PAGE_DETAILS", ())
+		self._register.sendData("NOTE_MANAGER_NOTEBOOK_PAGE_DETAILS", (notebookID, notebookTitle))
 
-		#self._register.fetchDataFromBuffer("NEW_NOTEBOOK_PAGE", lambda data: kw["func"](data))
+		self._register.fetchDataFromBuffer("NOTE_MANAGER_NEW_NOTEBOOK_PAGE_RESULT", lambda data: kw["func"](data))
 
 	@AuthenticatePromise
 	def serverAction(self, **kw):
 		local_node = kw["NODE"]
 		dbSession = GlobalDatabaseHandler.createNewSession()
 
+		def createNotebookPage(notebookPage_title_tuple, userID):
+			notebookID, notebookTitle = notebookPage_title_tuple
+			#TODO: Validate user has permission to create this new notebook page on the notebook
+			newNotebookPageDefault = NotebookPage()
+			newNotebookPageDefault.id = str(uuid4())
+			newNotebookPageDefault.permissionID = str(uuid4())
+			newNotebookPageDefault.createdByID = userID
+			newNotebookPageDefault.content = ""
+			newNotebookPageDefault.notebook_id = notebookID
+			newNotebookPageDefault.title = notebookTitle
+
+			local_node.sendData("NOTE_MANAGER_NEW_NOTEBOOK_PAGE_RESULT", newNotebookPageDefault)
+
+			GlobalDatabaseHandler.addObject(newNotebookPageDefault, dbSession)
+			GlobalDatabaseHandler.saveSession(dbSession)
+
+			dbSession.close()
+
 		def receivedUserSession(sessionID):
 			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
 			if userID != None:
 				#Create NotebookPage
-
-				dbSession.close()
+				local_node.fetchDataFromBuffer("NOTE_MANAGER_NOTEBOOK_PAGE_DETAILS", lambda data: createNotebookPage(data, userID))
 			else:
 				return
 		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
 
 class Note_Manager_Update_Notebook(Promise):
-	pass
+	def clientAction(self, **kw):
+		"""Takes 2 arguments:
+		notebookObj: This is the Notebook to be updated
+		func: The function to be executed once the notebook has been updated
+		Returns an updated Notebook object or None"""
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+		notebook = kw["notebookObj"]
+		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
+		self._register.sendData("NOTE_MANAGER_NOTEBOOK_DETAILS", notebook)
+		print("Sending Notebook")
+
+		self._register.fetchDataFromBuffer("NOTE_MANAGER_UPDATE_NOTEBOOK_RESULT", lambda data: kw["func"](data))
+
+	def serverAction(self, **kw):
+		local_node = kw["NODE"]
+		dbSession = GlobalDatabaseHandler.createNewSession()
+
+		def createNotebookPage(notebookObj, userID):
+			notebook = notebookObj
+			liveObject = dbSession.query(Notebook).filter(Notebook.createdByID == userID).filter(Notebook.id == notebook.id).one()
+			liveObject.title = notebook.title
+			local_node.sendData("NOTE_MANAGER_UPDATE_NOTEBOOK_RESULT", liveObject)
+			GlobalDatabaseHandler.saveSession(dbSession)
+			dbSession.close()
+
+		def receivedUserSession(sessionID):
+			print("Verifying...")
+			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
+			if userID != None:
+				#Update Notebook
+				local_node.fetchDataFromBuffer("NOTE_MANAGER_NOTEBOOK_DETAILS", lambda data: createNotebookPage(data, userID))
+			else:
+				return
+		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
+		print("Waiting on user ID")
 
 class Note_Manager_Delete_Notebook(Promise):
-	pass
+	def clientAction(self, **kw):
+		"""Takes 2 arguments:
+		notebookID: This is the ID of the notebook to be deleted
+		func: The function to be executed once the notebook has been updated
+		"""
+		pass
+
+	def serverAction(self, **kw):
+		pass
 
 class Note_Manager_Update_Notebook_Page(Promise):
-	pass
+	def clientAction(self, **kw):
+		"""Takes 2 arguments:
+		notebookPage: This is the NotebookPage to be updated
+		func: The function to be executed once the notebook has been updated
+		Returns an updated Notebook object or None"""
+		pass
+
+	def serverAction(self, **kw):
+		pass
 
 class Note_Manager_Delete_Notebook_Page(Promise):
-	pass
+	def clientAction(self, **kw):
+		"""Takes 2 arguments:
+		notebookPageID: This is the ID of the NotebookPage to be deleted
+		func: The function to be executed once the notebook has been deleted"""
+		pass
+
+	def serverAction(self, **kw):
+		pass
 
 class Note_Manager_Update_Category_Relation(Promise):
 	#Also adds category relations
@@ -167,3 +258,5 @@ class Note_Manager_Delete_Category(Promise):
 Promises.register(Note_Manager_List_Notes())
 Promises.register(Note_Manager_Create_Notebook())
 Promises.register(Note_Manager_Get_Notebook_Pages())
+Promises.register(Note_Manager_Create_Notebook_Page())
+Promises.register(Note_Manager_Update_Notebook())

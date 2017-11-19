@@ -60,9 +60,10 @@ class NoteSearchPanel(Frame):
 			func=lambda data: nnbm.setNotebookPages(data))
 
 class SearchPanel(Frame):
-	__SEARCH_ACTION__ = None
-	__DEFAULT_SEARCH_TEXT__ = ""
+
 	def __init__(self, master, **kw):
+		self.__SEARCH_ACTION__ = None
+		self.__DEFAULT_SEARCH_TEXT__ = ""
 		Frame.__init__(self, master, **kw)
 
 		self.className = "Frame"
@@ -85,9 +86,9 @@ class SearchPanel(Frame):
 ###############################
 
 class NotebookWindow(Window):
-	__NOTEBOOK_OBJECT__ = None
-	__NOTEBOOK_PAGES__ = None
 	def __init__(self):
+		self.__NOTEBOOK_OBJECT__ = None
+		self.__NOTEBOOK_PAGES__ = None
 		Window.__init__(self)
 
 		self.geometry("800x400")
@@ -100,6 +101,7 @@ class NotebookWindow(Window):
 
 		self.notebookTitle = NotebookTitle(self.contentFrame)
 		self.notebookTitle.pack(side="top", fill="x", padx=5, pady=5)
+
 
 		self.notebookPageContentHolder = Text(self.contentFrame)
 		self.notebookPageContentHolder.pack(fill="both", expand=True)
@@ -117,17 +119,20 @@ class NotebookWindow(Window):
 
 	def createNewNotebookPage(self, e=None):
 		notebookDialog = CreateNewNotebookPageWindow()
-		notebookDialog.bind("<<Generate_Notebook_Page>>", lambda e: self.execute_createNotebookPage(notebookDialog.getNotebookName()))
+		notebookDialog.bind("<<Generate_Notebook_Page>>", lambda e: self.execute_createNotebookPage(notebookDialog, self.__NOTEBOOK_OBJECT__.id))
 		notebookDialog.bind("<<Close_Window>>", lambda e: notebookDialog.destroy())
 
-	def execute_createNotebookPage(self, notebookVal):
-		print("Creating new notebook page: %s"%notebookVal)
-		Promises.execute("Note_Manager_Create_Notebook_Page", returnFunc=lambda data:print(data),
-			notebookName=notebookVal)
+	def execute_createNotebookPage(self, notebookDialog, notebookID):
+		title = notebookDialog.getNotebookName()
+		print("Creating new notebook page: %s"%title)
+		Promises.execute("Note_Manager_Create_Notebook_Page", func=lambda data: self.addNotebookPage(data),
+			notebookTitle=title, notebookID=notebookID)
+		notebookDialog.closeWindow()
 
 	def setNotebookObject(self, notebookObject):
 		self.__NOTEBOOK_OBJECT__ = notebookObject
 		self.notebookTitle.setNotebookTitle(notebookObject.title)
+		self.notebookTitle.updateNotebookObj(notebookObject)
 
 	def setNotebookPages(self, notebookPageList):
 		self.__NOTEBOOK_PAGES__ = notebookPageList
@@ -138,10 +143,10 @@ class NotebookWindow(Window):
 		self.destroy()
 
 class NotebookTabManager(Frame):
-	__NOTEBOOK_CONTENT_HOLDER__ = None
-	__NOTEBOOK_TITLE_WIDGET__ = None
-	__LOADED_FIRST__ = False
 	def __init__(self, master, **kw):
+		self.__NOTEBOOK_CONTENT_HOLDER__ = None
+		self.__NOTEBOOK_TITLE_WIDGET__ = None
+		self.__LOADED_FIRST__ = False
 		Frame.__init__(self, master, **kw)
 
 		self.className = "Frame"
@@ -175,6 +180,10 @@ class NotebookTitle(Frame):
 	def __init__(self, master, **kw):
 		Frame.__init__(self, master, **kw)
 
+		self._notebookTitle = None
+		self._notebookPageTitle = None
+		self.__NOTEBOOK_OBJECT__ = None
+
 		self.className = "Frame"
 
 		self.notebookTitle = SaveOnFocusLeaveEntry(self)
@@ -193,16 +202,30 @@ class NotebookTitle(Frame):
 	def setNotebookTitle(self, title):
 		self.notebookTitle.delete("0", "end")
 		self.notebookTitle.insert("0", title)
+		self._notebookTitle = title
 
 	def setNotebookPageTitle(self, title):
 		self.notebookPageTitle.delete("0", "end")
 		self.notebookPageTitle.insert("0", title)
+		self._notebookPageTitle = title
 
 	def saveNotebookTitleChange(self, event):
-		print("Request to save title")
+		if self._notebookTitle != self.notebookTitle.get():
+			Promises.execute("Note_Manager_Update_Notebook", notebookObj=self.__NOTEBOOK_OBJECT__,
+			func=self.updateNotebookObj)
+		else:
+			print("Left focus, but notebook title was not changed")
 
 	def saveNotebookPageTitleChange(self, event):
-		print("Request to save notebook page title")
+		if self._notebookPageTitle != self.notebookPageTitle.get():
+			print("Notebook page title changed. Request to save.")
+		else:
+			print("Left focus, but notebook title was not changed")
+
+	def updateNotebookObj(self, notebookObject):
+		print("Updating to: %s"%notebookObject.title)
+		self.__NOTEBOOK_OBJECT__ = notebookObject
+		self.setNotebookTitle(notebookObject.title)
 
 class HighlightableEntry(Entry):
 	def __init__(self, master, **kw):
