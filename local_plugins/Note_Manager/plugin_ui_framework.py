@@ -102,12 +102,16 @@ class NotebookWindow(Window):
 		self.notebookTitle = NotebookTitle(self.contentFrame)
 		self.notebookTitle.pack(side="top", fill="x", padx=5, pady=5)
 
+		self.saveButton = Button(self.contentFrame, text="Save", padx=5, pady=5)
+		self.saveButton["command"] = self.saveNotebookPage
+		self.saveButton.pack(side="bottom", anchor="e")
 
 		self.notebookPageContentHolder = Text(self.contentFrame)
 		self.notebookPageContentHolder.pack(fill="both", expand=True)
 
 		self.bind("<<Close_Window>>", self.close_window)
 		self.bind("<<Create_New_Notebook_Page>>", self.createNewNotebookPage)
+		self.notebookTabManager.bind("<<Swapping_Page>>", self.saveNotebookPage)
 
 		self.focus()
 
@@ -139,6 +143,14 @@ class NotebookWindow(Window):
 		for page in self.__NOTEBOOK_PAGES__:
 			self.addNotebookPage(page)
 
+	def saveNotebookPage(self, e=None):
+		page = self.notebookTabManager.getCurrentPage()
+		if page == None:
+			return
+		page.content = self.notebookTabManager.getContent()
+		Promises.execute("Note_Manager_Update_Notebook_Page", notebookObj=page,
+		func=lambda data: print("saved"))
+
 	def close_window(self, e=None):
 		self.destroy()
 
@@ -147,6 +159,7 @@ class NotebookTabManager(Frame):
 		self.__NOTEBOOK_CONTENT_HOLDER__ = None
 		self.__NOTEBOOK_TITLE_WIDGET__ = None
 		self.__LOADED_FIRST__ = False
+		self.__CURRENT_PAGE__ = None
 		Frame.__init__(self, master, **kw)
 
 		self.className = "Frame"
@@ -163,10 +176,18 @@ class NotebookTabManager(Frame):
 	def setNotebookTitleWidget(self, widget):
 		self.__NOTEBOOK_TITLE_WIDGET__ = widget
 
+	def getCurrentPage(self):
+		return self.__CURRENT_PAGE__
+
+	def getContent(self):
+		return self.__NOTEBOOK_CONTENT_HOLDER__.get("0.0", "end")
+
 	def swapToPage(self, widget, page):
+		self.event_generate("<<Swapping_Page>>")
 		self.__NOTEBOOK_CONTENT_HOLDER__.delete("0.0", "end")
 		self.__NOTEBOOK_CONTENT_HOLDER__.insert("0.0", page.content)
-		self.__NOTEBOOK_TITLE_WIDGET__.setNotebookPageTitle(page.title)
+		self.__NOTEBOOK_TITLE_WIDGET__.updateNotebookPage(page, widget)
+		self.__CURRENT_PAGE__ = page
 
 	def addNotebookPage(self, notebookPage):
 		page = Button(self, text=notebookPage.title)
@@ -183,6 +204,8 @@ class NotebookTitle(Frame):
 		self._notebookTitle = None
 		self._notebookPageTitle = None
 		self.__NOTEBOOK_OBJECT__ = None
+		self.__CURRENT_NOTEBOOK_PAGE__ = None
+		self.__CURRENT_NOTEBOOK_WIDGET = None
 
 		self.className = "Frame"
 
@@ -211,21 +234,27 @@ class NotebookTitle(Frame):
 
 	def saveNotebookTitleChange(self, event):
 		if self._notebookTitle != self.notebookTitle.get():
+			self.__NOTEBOOK_OBJECT__.title = self.notebookTitle.get()
 			Promises.execute("Note_Manager_Update_Notebook", notebookObj=self.__NOTEBOOK_OBJECT__,
 			func=self.updateNotebookObj)
-		else:
-			print("Left focus, but notebook title was not changed")
 
 	def saveNotebookPageTitleChange(self, event):
 		if self._notebookPageTitle != self.notebookPageTitle.get():
-			print("Notebook page title changed. Request to save.")
-		else:
-			print("Left focus, but notebook title was not changed")
+			self.__CURRENT_NOTEBOOK_PAGE__.title = self.notebookPageTitle.get()
+			Promises.execute("Note_Manager_Update_Notebook_Page", notebookObj=self.__CURRENT_NOTEBOOK_PAGE__,
+			func=self.updateNotebookPage)
 
 	def updateNotebookObj(self, notebookObject):
-		print("Updating to: %s"%notebookObject.title)
 		self.__NOTEBOOK_OBJECT__ = notebookObject
 		self.setNotebookTitle(notebookObject.title)
+
+	def updateNotebookPage(self, notebookPage, widget=None):
+		self.__CURRENT_NOTEBOOK_PAGE__ = notebookPage
+		self.setNotebookPageTitle(notebookPage.title)
+		if widget:
+			self.__CURRENT_NOTEBOOK_WIDGET = widget
+		if self.__CURRENT_NOTEBOOK_WIDGET:
+			self.__CURRENT_NOTEBOOK_WIDGET["text"] = notebookPage.title
 
 class HighlightableEntry(Entry):
 	def __init__(self, master, **kw):
