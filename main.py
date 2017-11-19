@@ -47,6 +47,7 @@ def authenticate(username, password):
 	Promises.execute("Iter_3_Authenticate", username=username, password=password,
 		success=launch_app_view, fail=lambda: print("Authentication failed."))
 
+
 Promises.setDefaultMode(mode="Client") #Set the PromiseManager to execute promises on client mode by default
 setTwistedPromiseManager(Promises) #Bind the PromiseManager to our twisted protocol
 b = Bootstrap()

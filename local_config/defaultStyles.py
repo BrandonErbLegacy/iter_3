@@ -31,6 +31,13 @@ def do_style(boot):
 	labelStyle["background"] = STYLE_CONFIG["tertiary_color"]
 	labelStyle["foreground"] = STYLE_CONFIG["text_color"]
 
+	canvasStyle = Style("Canvas")
+	canvasStyle["background"] = STYLE_CONFIG["tertiary_color"]
+	canvasStyle["relief"] = "flat"
+	canvasStyle["borderwidth"] = 0
+	canvasStyle["highlightthickness"] = 0
+
+
 	checkboxStyle = Style("Checkbox")
 	checkboxStyle["background"] = STYLE_CONFIG["primary_color"]
 	checkboxStyle["foreground"] = STYLE_CONFIG["text_color"]

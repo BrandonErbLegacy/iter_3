@@ -10,6 +10,7 @@ from tkinter import Button as tkButton
 from tkinter import Checkbutton as tkCheckbutton
 from tkinter import Canvas as tkCanvas
 from tkinter import Listbox as tkListbox
+from tkinter import Scrollbar
 
 from tkinter import IntVar
 
@@ -468,6 +469,47 @@ class Tab(Frame):
 		self.textW["text"] = text
 		self.text = text
 
+class ScrollableFrame(Frame):
+	def __init__(self, master, **kw):
+		Frame.__init__(self, master, **kw)
+		self.canvas = Canvas(self)
+		self.canvas.pack(side="left", fill="both", expand=True)
+		self.scroll = Scrollbar(self)
+		#self.scroll.pack(side="right", fill="y")
+
+		self.canvas["yscrollcommand"] = self.scroll.set
+		self.scroll["command"] = self.canvas.yview
+
+		self.innerFrame = Frame(self.canvas)
+		self.canvas_frame = self.canvas.create_window((0,0), window=self.innerFrame, anchor="nw")
+
+		self.innerFrame.bind("<Configure>", self.frameConfig)
+		self.canvas.bind('<Configure>', self.frameWidth)
+		#self.bind_all("<MouseWheel>", self.innerScroll)
+
+	def showScrollbar(self, t):
+		if t == False:
+			self.scroll.forget()
+		else:
+			self.scroll.pack(side="right", fill="y")
+
+	def frameWidth(self, event):
+		canvas_width = event.width
+		self.canvas.itemconfig(self.canvas_frame, width=canvas_width)
+
+	def frameConfig(self, event):
+		self.canvas["scrollregion"] = self.canvas.bbox("all")
+		for item in self.innerFrame.winfo_children():
+			item.bind("<MouseWheel>", self.innerScroll)
+
+	def innerScroll(self, event):
+		self.canvas.yview_scroll(int(-1*(event.delta/40)), "units")
+
+	def getInner(self):
+		return self.innerFrame
+
+## Templates for commonly done things ##
+
 class LoginTemplate(Window):
 	def __init__(self, **kw):
 		Window.__init__(self, **kw)
@@ -547,3 +589,9 @@ class OkCancelDialog(Window):
 
 	def setCancelAction(self, callback):
 		self.cancelButton["command"] = callback
+
+## Context Menu Classes ##
+
+class ContextMenu(Frame):
+	def spawn(self, event):
+		print("Spawning on top of %s"%(event.widget.className))

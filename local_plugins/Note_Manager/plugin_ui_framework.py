@@ -1,4 +1,4 @@
-from local_api.ui.base import Frame, Entry, Label, Button, Window, Text
+from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame
 from local_api.network.twisted_promises import Promises
 
 ###############################
@@ -47,8 +47,12 @@ class NoteSearchPanel(Frame):
 		self.notebook_frame = Frame(self)
 		self.notebook_frame.pack(fill="both", expand=True)
 
+		self.scrollable = ScrollableFrame(self.notebook_frame)
+		self.scrollable.pack(fill="both", expand=True)
+		#self.scrollable.showScrollbar(True)
+
 	def add_notebook(self, notebook):
-		button = Button(self.notebook_frame, text=notebook.title)
+		button = Button(self.scrollable.getInner(), text=notebook.title)
 		button["command"] = lambda: self.launchNotebook(notebook)
 		button.pack(fill="x", padx=5, pady=1, ipadx=5, ipady=5)
 

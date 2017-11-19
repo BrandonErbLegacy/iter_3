@@ -1,4 +1,4 @@
-from local_api.ui.base import Frame, Button, Label
+from local_api.ui.base import Frame, Button, Label, ScrollableFrame
 from tkinter import PhotoImage
 
 class AppLauncherFrame(Frame):
@@ -8,12 +8,16 @@ class AppLauncherFrame(Frame):
 
 		appLauncherLabel = Label(self, text="Installed Applications", font=(16))
 		appLauncherLabel.pack(fill="x", anchor="center", pady=5)
+
+		self.appLauncherScrollable = ScrollableFrame(self)
+		self.appLauncherScrollable.pack(fill="both", expand=True)
+
 		#appLauncherLabel = Label(self, text="", font=(8))
 		#appLauncherLabel.pack(fill="x", anchor="center")
 
 	def addAppToLauncher(self, text, icon, action):
 		#if icon == None:
-		launchingButton = Button(self, text=text, anchor="w")
+		launchingButton = Button(self.appLauncherScrollable.getInner(), text=text, anchor="w")
 		#else:
 		#	print("%s assigned an image"%text)
 		#	launchingButton = Button(self, image=PhotoImage(icon), anchor="w")

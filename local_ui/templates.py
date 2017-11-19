@@ -1,7 +1,7 @@
 #from tkinter import PhotoImage
 from PIL import Image, ImageTk
 
-from local_api.ui.base import Frame, Button
+from local_api.ui.base import Frame, Button, ScrollableFrame
 
 from local_ui.atoms import AppLaunchingIcon
 from local_ui.organisms import AppLauncherFrame
