@@ -57,11 +57,13 @@ def do_style(boot):
 	textStyle = Style("Text")
 
 	textStyle["wrap"] = "word"
-	textStyle["bg"] = STYLE_CONFIG["tertiary_color"]
+	textStyle["bg"] = STYLE_CONFIG["secondary_color"]
 	textStyle["fg"] = STYLE_CONFIG["text_color"]
 	textStyle["font"] = STYLE_CONFIG["font"]
 	textStyle["insertbackground"] = STYLE_CONFIG["text_color"]
 	textStyle["tabs"] = "1c"
+	textStyle["highlightthickness"] = 0
+	textStyle["borderwidth"] = 0
 
 	listboxStyle = Style("Listbox")
 
