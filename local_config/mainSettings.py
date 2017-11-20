@@ -1,5 +1,6 @@
 from os import getcwd
 from os.path import join
+#from local_api.configuration
 ROOT_PROJECT_DIR = getcwd()
 
 DEFAULT_DATA_DIRECTORY = join(ROOT_PROJECT_DIR, "local_storage")
@@ -23,3 +24,18 @@ DEFAULT_PLUGIN_DIRECTORY_STRUCTURE = {
 
 DEFAULT_APP_LAUNCHER_ICON_WIDTH = 100
 DEFAULT_APP_LAUNCHER_ICON_HEIGHT = 100
+
+def getSettings(ENV):
+	ENV_SETTINGS = {
+		"HOST":"localhost",
+		"PORT":9001,
+		"DEBUG": {
+			"ACTIVE":True,
+			"USERNAME":"admin",
+			"PASSWORD":"admin"
+		}
+	}
+	if ENV == "PROD":
+		ENV_SETTINGS["DEBUG"]["ACTIVE"] = False
+		ENV_SETTINGS["HOST"] = "192.168.130.13"
+	return ENV_SETTINGS

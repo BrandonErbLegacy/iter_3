@@ -8,7 +8,7 @@ class NoteManagerWindow(Window):
 	def __init__(self):
 		Window.__init__(self)
 
-		self.geometry("800x400")
+		self.geometry("550x600")
 
 		self.noteSearchPanel = NoteSearchPanel(self)
 		self.noteSearchPanel.pack(fill="both", expand=True, side="left")
