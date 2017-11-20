@@ -265,6 +265,9 @@ class Text(tkText):
 	def __init__(self, master, **kw):
 		tkText.__init__(self, master, **kw)
 		WidgetStyleBind(self)
+	def get(self, *args, **kw):
+		#Strip new line added at end by default
+		return tkText.get(self, *args, **kw)[:-1]
 
 class Entry(tkEntry):
 	def __init__(self, master, **kw):
