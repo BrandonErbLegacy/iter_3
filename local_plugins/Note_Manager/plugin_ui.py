@@ -8,6 +8,8 @@ class NoteManagerWindow(Window):
 	def __init__(self):
 		Window.__init__(self)
 
+		self.notehashVal = None
+
 		self.geometry("550x600")
 
 		self.noteSearchPanel = NoteSearchPanel(self)
@@ -17,8 +19,17 @@ class NoteManagerWindow(Window):
 		self.categorySearchPanel.pack(fill="y", side="right")
 
 		self.bind("<<Close_Window>>", self.close_window)
+		self.bind("<FocusIn>", self.highlighted)
 
 		Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
+
+	def highlighted(self, e=None):
+		self.reset()
+		Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
+
+	def reset(self):
+		self.noteSearchPanel.reset()
+		self.categorySearchPanel.reset()
 
 	def load_notebook_list(self, list):
 		#print("Loading %i notebooks "%(len(list)))

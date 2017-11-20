@@ -39,6 +39,45 @@ class Note_Manager_List_Notes(Promise):
 
 		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", getNoteList)
 
+class Note_Manager_Validate_Note_List(Promise):
+	@AuthenticatePromise
+	def clientAction(self, **kw):
+		"""Takes 2 arguments
+		hashVal: This is the last known hash val for all notes
+		changedFunc: This is the function to be executed if it differs from the server hash
+		"""
+		raise Warning("Not implemented yet!")
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+
+		hashVal = kw["hashVal"]
+		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
+		self._register.sendData("NOTE_MANAGER_HASH", hashVal)
+		#self._register.fetchDataFromBuffer("NOTE_MANAGER_HASH", lambda data: kw["changedFunc"](data))
+
+	@AuthenticatePromise
+	def serverAction(self, **kw):
+		raise Warning("Not implemented yet!")
+		local_node = kw["NODE"]
+
+		dbSession = GlobalDatabaseHandler.createNewSession()
+
+		def executeValidate(hval, userID):
+			print("running query")
+			#notebooks = dbSession.query(Notebook).filter(Notebook.createdByID == userID).all()
+			#notebookHash = hash(notebooks)
+			#print("%s mismatches %s"%(notebookHash, hval))
+			#local_node.sendData("NOTE_MANAGER_HASH", notebookHash)
+			#dbSession.close()
+
+		def getNoteList(sessionID):
+			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
+			if userID != None:
+				print("Preppring exec")
+				local_node.fetchDataFromBuffer("NOTE_MANAGER_HASH", lambda data: executeValidate(data, userID))
+				print("Exec prepped")
+			else:
+				return
+		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", getNoteList)
 
 class Note_Manager_List_Notes_By_Multiple_Category_ID(Promise):
 	#Lists notes with all categories
@@ -288,3 +327,4 @@ Promises.register(Note_Manager_Get_Notebook_Pages())
 Promises.register(Note_Manager_Create_Notebook_Page())
 Promises.register(Note_Manager_Update_Notebook())
 Promises.register(Note_Manager_Update_Notebook_Page())
+Promises.register(Note_Manager_Validate_Note_List())

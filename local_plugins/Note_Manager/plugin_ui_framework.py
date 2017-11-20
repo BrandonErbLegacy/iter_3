@@ -24,6 +24,9 @@ class CategorySearchPanel(Frame):
 		self.searchPanel = SearchPanel(self)
 		self.searchPanel.pack(fill="x")
 
+	def reset(self):
+		pass
+
 class NoteSearchPanel(Frame):
 	def __init__(self, master, **kw):
 		Frame.__init__(self, master, **kw)
@@ -50,6 +53,10 @@ class NoteSearchPanel(Frame):
 		self.scrollable = ScrollableFrame(self.notebook_frame)
 		self.scrollable.pack(fill="both", expand=True)
 		#self.scrollable.showScrollbar(True)
+
+	def reset(self):
+		for item in self.scrollable.getInner().winfo_children():
+			item.destroy()
 
 	def add_notebook(self, notebook):
 		button = Button(self.scrollable.getInner(), text=notebook.title)
