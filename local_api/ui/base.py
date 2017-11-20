@@ -502,6 +502,10 @@ class ScrollableFrame(Frame):
 		for item in self.innerFrame.winfo_children():
 			item.bind("<MouseWheel>", self.innerScroll)
 
+	def configureScroll(self):
+		for item in self.innerFrame.winfo_children():
+			item.bind("<MouseWheel>", self.innerScroll)
+
 	def innerScroll(self, event):
 		self.canvas.yview_scroll(int(-1*(event.delta/40)), "units")
 

@@ -62,6 +62,7 @@ class NoteSearchPanel(Frame):
 		button = Button(self.scrollable.getInner(), text=notebook.title)
 		button["command"] = lambda: self.launchNotebook(notebook)
 		button.pack(fill="x", padx=5, pady=1, ipadx=5, ipady=5)
+		self.scrollable.configureScroll()
 
 	def launchNotebook(self, notebook):
 		#print("Launching (%s) notebook with id %s"%(notebook.title, notebook.id))

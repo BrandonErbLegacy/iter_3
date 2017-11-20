@@ -19,7 +19,7 @@ import local_promises.required_promises #Just runs the local_promises code
 #Import ENV_SETTINGS
 from local_config.mainSettings import getSettings
 
-ENV = getSettings("DEV")
+ENV = getSettings("PROD")
 
 ### Network Execution Bindings ###
 
