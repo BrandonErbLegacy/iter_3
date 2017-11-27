@@ -11,6 +11,7 @@ from tkinter import Checkbutton as tkCheckbutton
 from tkinter import Canvas as tkCanvas
 from tkinter import Listbox as tkListbox
 from tkinter import Scrollbar
+from tkinter import PanedWindow as tkPaned
 
 from tkinter import IntVar
 
@@ -251,9 +252,49 @@ class StyleTree:
 			return None
 
 ## Overridden Tk widgets ##
+class Window(Toplevel):
+	def __init__(self, **kw):
+		Toplevel.__init__(self, **kw)
+		self.__isMain__ = False
+		self.protocol("WM_DELETE_WINDOW", self.closeWindow)
+		self.__IsShown__ = True
+		WidgetStyleBind(self)
+
+		#self.menu = Menu(self)
+		#self.menu.pack(fill=X)
+
+	def destroyWindow(self, e=None):
+		self.destroy()
+
+	def toggleHide(self):
+		if self.__IsShown__:
+			self.hideWindow()
+		else:
+			self.showWindow()
+
+	def hideWindow(self):
+		self.__IsShown__ = False
+		self.withdraw()
+
+	def showWindow(self):
+		self.__IsShown__ = True
+		self.deiconify()
+
+	def hideMenu(self):
+		pass
+		#self.menu.forget()
+
+	def closeWindow(self):
+		self.event_generate("<<Close_Window>>")
+
 class Frame(tkFrame):
 	def __init__(self, master, **kw):
 		tkFrame.__init__(self, master, **kw)
+		WidgetStyleBind(self)
+
+class PanedWindow(tkPaned):
+	def __init__(self, master, **kw):
+		tkPaned.__init__(self, master, **kw)
 		WidgetStyleBind(self)
 
 class Label(tkLabel):
@@ -319,6 +360,21 @@ class SizedButton(Button):
 		self._host.pack_propagate(False)
 		self._host.pack(**kw)
 		Button.pack(self, fill="both", expand=True)
+
+class HighlightableButton(Button):
+	def __init__(self, master, **kw):
+		Button.__init__(self, master, **kw)
+
+		self.className = "HighlightableButton.Normal"
+
+		self.bind("<Enter>", self.highlight)
+		self.bind("<Leave>", self.unhighlight)
+
+	def highlight(self, e):
+		self.className = "HighlightableButton.Active"
+
+	def unhighlight(self, e):
+		self.className = "HighlightableButton.Normal"
 
 class TitledFrame(Frame):
 	def __init__(self, master, **kw):
@@ -407,41 +463,6 @@ class Tabber(Frame):
 	def getActiveFrame(self):
 		return self.selectedTab
 
-class Window(Toplevel):
-	def __init__(self, **kw):
-		Toplevel.__init__(self, **kw)
-		self.__isMain__ = False
-		self.protocol("WM_DELETE_WINDOW", self.closeWindow)
-		self.__IsShown__ = True
-		WidgetStyleBind(self)
-
-		#self.menu = Menu(self)
-		#self.menu.pack(fill=X)
-
-	def destroyWindow(self, e=None):
-		self.destroy()
-
-	def toggleHide(self):
-		if self.__IsShown__:
-			self.hideWindow()
-		else:
-			self.showWindow()
-
-	def hideWindow(self):
-		self.__IsShown__ = False
-		self.withdraw()
-
-	def showWindow(self):
-		self.__IsShown__ = True
-		self.deiconify()
-
-	def hideMenu(self):
-		pass
-		#self.menu.forget()
-
-	def closeWindow(self):
-		self.event_generate("<<Close_Window>>")
-
 class Tab(Frame):
 	def __init__(self, master, **kw):
 		Frame.__init__(self, master, **kw)
@@ -514,6 +535,66 @@ class ScrollableFrame(Frame):
 
 	def getInner(self):
 		return self.innerFrame
+
+class Menu(Frame):
+	def __init__(self, master, *args, **kw):
+		self.frames = {}
+		self.master = master
+		try:
+			super().__init__(master, *args, **kw)
+		except:
+			Frame.__init__(self, master, *args, **kw)
+		self.openMenu = None
+
+	def addMainMenu(self, name):
+		newButton = HighlightableButton(self, text=name)
+		newButton.pack(anchor="w", side="left")
+		#newButton.className = "Menu_Main"
+
+		newButton.bind("<Button>", self.createDropdown)
+		newButton.bind("<Enter>", self.switchDropdown)
+
+		f = Frame(self.master)
+		self.frames[name] = f
+
+	def switchDropdown(self, event):
+		if self.openMenu == None:
+			return
+		else:
+			self.createDropdown(event)
+
+	def createDropdown(self, event):
+		parent = self.nametowidget(event.widget)
+		frame = self.frames[parent.cget("text")]
+		frame.className = "MenuBorder"
+		if self.openMenu != None:
+			if self.openMenu != frame:
+				self.hideOpenDropdown()
+			else:
+				self.hideOpenDropdown()
+				return
+		hostWindow = self.nametowidget(self.nametowidget(parent.winfo_parent()).winfo_parent())
+		xOffset = abs(hostWindow.winfo_rootx() - parent.winfo_rootx())
+		yOffset = abs(hostWindow.winfo_rooty() - parent.winfo_rooty())
+		x = xOffset
+		y = yOffset+25
+		frame.place(x=x, y=y)
+		frame.tkraise()
+
+		self.openMenu = frame
+
+	def hideOpenDropdown(self, event=None):
+		self.openMenu.place_forget()
+		self.openMenu = None
+
+	def addSubMenu(self, main, sub, func):
+		parent = self.frames[main]
+		newButton = HighlightableButton(parent, text=sub, command=lambda: self.interceptCommand(func))
+		newButton.pack(anchor="w", fill="x", padx=1, pady=1)
+
+	def interceptCommand(self, command):
+		self.hideOpenDropdown()
+		command()
 
 ## Templates for commonly done things ##
 

@@ -27,6 +27,11 @@ def do_style(boot):
 	buttonStyle["activeforeground"] = STYLE_CONFIG["text_color"]
 	buttonStyle["relief"] = "flat"
 
+	highlightableButtonStyle = Style("HighlightableButton", parent="Button")
+	highlightableButtonStyle_active = Style("HighlightableButton.Active", parent="HighlightableButton")
+	highlightableButtonStyle_normal = Style("HighlightableButton.Normal", parent="HighlightableButton")
+	highlightableButtonStyle_active["background"] = STYLE_CONFIG["empahasis_color"]
+
 	labelStyle = Style("Label")
 	labelStyle["background"] = STYLE_CONFIG["tertiary_color"]
 	labelStyle["foreground"] = STYLE_CONFIG["text_color"]
@@ -36,7 +41,6 @@ def do_style(boot):
 	canvasStyle["relief"] = "flat"
 	canvasStyle["borderwidth"] = 0
 	canvasStyle["highlightthickness"] = 0
-
 
 	checkboxStyle = Style("Checkbox")
 	checkboxStyle["background"] = STYLE_CONFIG["primary_color"]
@@ -100,6 +104,8 @@ def do_style(boot):
 
 	sidebarButtonLaunchButton = Style("AppLauncher_Sidebar_LaunchButton", parent="Sidebar_Button_Main")
 
+	menuBorderStyle = Style("MenuBorder")
+	menuBorderStyle["background"] = STYLE_CONFIG["secondary_color"]
 
 	#There is a strong need for inheritance.
 	#style["AppLauncher_Sidebar_Button"]["background"] = STYLE_CONFIG["primary_color"]

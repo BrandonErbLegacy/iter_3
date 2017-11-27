@@ -21,7 +21,7 @@ class NoteManagerWindow(Window):
 		self.bind("<<Close_Window>>", self.close_window)
 		self.bind("<FocusIn>", self.highlighted)
 
-		Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
+		self.focus()
 
 	def highlighted(self, e=None):
 		self.reset()
@@ -37,7 +37,10 @@ class NoteManagerWindow(Window):
 			self.add_notebook(item)
 
 	def add_notebook(self, notebook):
-		self.noteSearchPanel.add_notebook(notebook)
+		try:
+			self.noteSearchPanel.add_notebook(notebook)
+		except:
+			print("Window was destroyed")
 
 	def close_window(self, e=None):
 		self.destroy()

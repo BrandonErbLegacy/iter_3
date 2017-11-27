@@ -1,4 +1,4 @@
-from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame
+from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow
 from local_api.network.twisted_promises import Promises
 
 ###############################
@@ -105,18 +105,23 @@ class NotebookWindow(Window):
 
 		self.geometry("800x400")
 
-		self.notebookTabManager = NotebookTabManager(self)
+		self.menu = Menu(self)
+		self.menu.addMainMenu("File")
+		self.menu.addSubMenu("File", "New", self.createNewNotebookPage)
+		self.menu.addSubMenu("File", "Save", func=self.saveNotebookPage)
+		self.menu.pack(fill="x")
+
+		self.panedWindow = PanedWindow(self)
+		self.panedWindow.pack(fill="both")
+
+		self.notebookTabManager = NotebookTabManager(self.panedWindow)
 		self.notebookTabManager.pack(side="left", fill="y")
 
-		self.contentFrame = Frame(self)
+		self.contentFrame = Frame(self.panedWindow)
 		self.contentFrame.pack(side="right", fill="both", expand=True)
 
 		self.notebookTitle = NotebookTitle(self.contentFrame)
 		self.notebookTitle.pack(side="top", fill="x", padx=5, pady=5)
-
-		self.saveButton = Button(self.contentFrame, text="Save", padx=5, pady=5)
-		self.saveButton["command"] = self.saveNotebookPage
-		self.saveButton.pack(side="bottom", anchor="e")
 
 		self.notebookPageContentHolder = Text(self.contentFrame)
 		self.notebookPageContentHolder.pack(fill="both", expand=True)
@@ -129,6 +134,9 @@ class NotebookWindow(Window):
 
 		self.notebookTabManager.setContentHolder(self.notebookPageContentHolder)
 		self.notebookTabManager.setNotebookTitleWidget(self.notebookTitle)
+
+		self.panedWindow.add(self.notebookTabManager)
+		self.panedWindow.add(self.contentFrame)
 
 	def addNotebookPage(self, notebookPage):
 		self.notebookTabManager.addNotebookPage(notebookPage)
@@ -176,8 +184,8 @@ class NotebookTabManager(Frame):
 
 		self.className = "Frame"
 
-		self.addNotebookPageButton = Button(self, text="+", command=self.createNewNotebookPage)
-		self.addNotebookPageButton.pack(side="bottom", fill="x")
+		#self.addNotebookPageButton = Button(self, text="+", command=self.createNewNotebookPage)
+		#self.addNotebookPageButton.pack(side="bottom", fill="x")
 
 	def createNewNotebookPage(self, e=None):
 		self.event_generate("<<Create_New_Notebook_Page>>")

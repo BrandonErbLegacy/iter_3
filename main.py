@@ -1,4 +1,4 @@
-from local_api.ui.base import Bootstrap
+from local_api.ui.base import Bootstrap, Menu
 #from common_api.promises.promises import Promises
 
 from local_api.plugin.loader import PluginManager
@@ -19,7 +19,7 @@ import local_promises.required_promises #Just runs the local_promises code
 #Import ENV_SETTINGS
 from local_config.mainSettings import getSettings
 
-ENV = getSettings("PROD")
+ENV = getSettings("DEV")
 
 ### Network Execution Bindings ###
 

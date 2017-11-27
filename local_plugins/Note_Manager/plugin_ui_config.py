@@ -16,6 +16,8 @@ def getStyles():
 
 	Style("Notebook_Title")["font"] = (50)
 
+	Style("NotebookTabManager")["width"] = 50
+
 	Style("Notebook_Title_Entry.Active")["background"] = STYLE_CONFIG["secondary_color"]
 
 	Notebook_Title_Entry_Inactive = Style("Notebook_Title_Entry.Inactive")
