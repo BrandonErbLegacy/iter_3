@@ -42,7 +42,8 @@ def launch_app_view(e=None):
 	# Load Plugins
 	plg_manage = PluginManager(b)
 	for activePlugin in plg_manage.loadedPlugins:
-		lt.launcher_frame.addAppToLauncher(activePlugin.CONST_PLUGIN_NAME, None, activePlugin.ON_CLICK_METHOD)
+		if activePlugin.ON_CLICK_METHOD != None:
+			lt.launcher_frame.addAppToLauncher(activePlugin.CONST_PLUGIN_NAME, None, activePlugin.ON_CLICK_METHOD)
 
 def authenticate(username, password):
 	Promises.execute("Iter_3_Authenticate", username=username, password=password,

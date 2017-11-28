@@ -131,7 +131,7 @@ def do_style(boot):
 
 	#style["AppLauncher_MainFrame"]["background"] = "#00FF00"
 
-	#style["Testing_Blue"]["background"] = "#0000FF"
+	Style("Testing_Blue")["background"] = "#0000FF"
 
 	#style["AppLaunchingIcon"]["background"] = STYLE_CONFIG["secondary_color"]
 	#style["AppLaunchingIcon_Hover"]["background"] = STYLE_CONFIG["primary_color"]

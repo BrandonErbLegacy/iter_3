@@ -112,12 +112,13 @@ class NotebookWindow(Window):
 		self.menu.pack(fill="x")
 
 		self.panedWindow = PanedWindow(self)
-		self.panedWindow.pack(fill="both")
+		self.panedWindow.pack(fill="both", expand=True)
 
 		self.notebookTabManager = NotebookTabManager(self.panedWindow)
 		self.notebookTabManager.pack(side="left", fill="y")
 
 		self.contentFrame = Frame(self.panedWindow)
+		self.className = "Testing_Blue"
 		self.contentFrame.pack(side="right", fill="both", expand=True)
 
 		self.notebookTitle = NotebookTitle(self.contentFrame)
