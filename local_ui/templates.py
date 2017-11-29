@@ -45,7 +45,6 @@ class HomeTemplate(Frame):
 			sidebarButton = Button(self.sidebarFrame, text=text)
 			sidebarButton.className = "AppLauncher_Sidebar_Button"
 		else:
-			print("%s assigned an image"%text)
 			img = Image.open(icon)
 			imgtk = ImageTk.PhotoImage(img)
 			sidebarButton = Button(self.sidebarFrame, image=imgtk)
@@ -55,7 +54,7 @@ class HomeTemplate(Frame):
 		sidebarButton.pack(side=side, fill="x", pady=1)
 
 	def _swapMainFrameContext(self, frame):
-		print("Swapping to frame.")
+		#print("Swapping to frame.")
 		if frame == None:
 			print("No frame was passed in!")
 			return

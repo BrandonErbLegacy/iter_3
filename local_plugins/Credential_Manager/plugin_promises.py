@@ -20,7 +20,7 @@ class Credential_Manager_Create_Credential(Promise):
 		cred.notes = notes
 		cred.displayName = displayName
 		cred.permissionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
-		print("Sending %s sessionID "%cred.permissionID)
+		#print("Sending %s sessionID "%cred.permissionID)
 		self._register.sendData("NEW_CREDENTIAL", cred)
 
 	def commandLineAction(self, session):

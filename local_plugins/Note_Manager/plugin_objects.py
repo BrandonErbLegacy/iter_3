@@ -20,13 +20,6 @@ class NotebookPage(DatabaseBase):
 	content = Column(String)
 	title = Column(String(5))
 
-class NoteCategory(DatabaseBase):
-	__tablename__ = "Note_Manager_Plugin_Note_Category"
-
-	id = Column(String(36), primary_key=True)
-	name = Column(String(36))
-	description = Column(String(36))
-
 class NoteCategory_Note_Relation(DatabaseBase):
 	__tablename__ = "Note_Manager_Plugin_Note_Category_relations"
 

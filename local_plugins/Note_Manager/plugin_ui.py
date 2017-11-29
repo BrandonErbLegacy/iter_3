@@ -34,13 +34,14 @@ class NoteManagerWindow(Window):
 	def load_notebook_list(self, list):
 		#print("Loading %i notebooks "%(len(list)))
 		for item in list:
-			self.add_notebook(item)
+			if self.add_notebook(item) == False: break
 
 	def add_notebook(self, notebook):
 		try:
 			self.noteSearchPanel.add_notebook(notebook)
+			return True
 		except:
-			print("Window was destroyed")
+			return False
 
 	def close_window(self, e=None):
 		self.destroy()
