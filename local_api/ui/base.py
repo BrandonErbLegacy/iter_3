@@ -262,6 +262,7 @@ class Window(Toplevel):
 
 		#self.menu = Menu(self)
 		#self.menu.pack(fill=X)
+		self.focus()
 
 	def destroyWindow(self, e=None):
 		self.destroy()

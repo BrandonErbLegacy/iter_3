@@ -5,7 +5,7 @@ from local_api.file.dbobjects import GlobalDatabaseHandler
 from getpass import getpass
 from uuid import uuid4
 
-from local_plugins.Note_Manager.plugin_objects import Notebook, NoteCategory, NoteCategory_Note_Relation, NotebookPage
+from local_plugins.Note_Manager.plugin_objects import Notebook, NoteCategory_Note_Relation, NotebookPage
 
 from local_api.helpers.accessControl import getUserBySession, getPeerIP
 

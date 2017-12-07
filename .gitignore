@@ -2,3 +2,4 @@
 __pycache__
 *.pyc
 local_plugins/Reddit_Grab
+local_plugins/McLua_Manager
