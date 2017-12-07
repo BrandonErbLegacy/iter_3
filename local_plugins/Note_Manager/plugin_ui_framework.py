@@ -1,4 +1,4 @@
-from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow
+from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow, OkCancelDialog
 from local_api.network.twisted_promises import Promises
 
 ###############################
@@ -172,7 +172,19 @@ class NotebookWindow(Window):
 		func=lambda data: print("saved"))
 
 	def close_window(self, e=None):
-		self.destroy()
+		def destroyWin():
+			self.destroy()
+			okCancel.destroy()
+		def saveData():
+			self.saveNotebookPage()
+			self.destroy()
+			destroyWin()
+
+		okCancel = OkCancelDialog("Do you want to save this page before exiting?")
+		okCancel.setCancelAction(destroyWin)
+		okCancel.setOkAction(saveData)
+		okCancel.setCancelText("Don't save")
+		okCancel.setOkText("Save")
 
 class NotebookTabManager(Frame):
 	def __init__(self, master, **kw):

@@ -693,6 +693,12 @@ class OkCancelDialog(Window):
 		self.cancelButton = Button(self.buttonFrame, text="Cancel")
 		self.cancelButton.pack(side="right", fill="x", expand=True, padx=5, pady=5)
 
+	def setOkText(self, text):
+		self.okButton["text"] = text
+
+	def setCancelText(self, text):
+		self.cancelButton["text"] = text
+
 	def setOkAction(self, callback):
 		self.okButton["command"] = callback
 
