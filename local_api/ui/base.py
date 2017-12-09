@@ -546,6 +546,14 @@ class Menu(Frame):
 		except:
 			Frame.__init__(self, master, *args, **kw)
 		self.openMenu = None
+		self.min_width = 100
+		self.min_height = None
+
+	def setMinWidth(self, minw):
+		self.min_width = minw
+
+	def setMinHeight(self, minh):
+		self.min_height = minh
 
 	def addMainMenu(self, name):
 		newButton = HighlightableButton(self, text=name)
@@ -581,6 +589,18 @@ class Menu(Frame):
 		y = yOffset+25
 		frame.place(x=x, y=y)
 		frame.tkraise()
+		if self.min_width:
+			if frame.winfo_reqwidth() < self.min_width:
+				frame.pack_propagate(0)
+				frame["width"] = self.min_width
+		else:
+			frame["width"] = 300
+		if self.min_height:
+			if frame.winfo_reqheight() < self.min_height:
+				frame.pack_propagate(0)
+				frame["height"] = self.min_height
+		else:
+			frame["height"] = len(frame.winfo_children())*30
 
 		self.openMenu = frame
 
@@ -672,6 +692,12 @@ class OkCancelDialog(Window):
 
 		self.cancelButton = Button(self.buttonFrame, text="Cancel")
 		self.cancelButton.pack(side="right", fill="x", expand=True, padx=5, pady=5)
+
+	def setOkText(self, text):
+		self.okButton["text"] = text
+
+	def setCancelText(self, text):
+		self.cancelButton["text"] = text
 
 	def setOkAction(self, callback):
 		self.okButton["command"] = callback

@@ -41,7 +41,11 @@ class Server:
 				break
 			else:
 				print("Executing promise: %s"%user_input)
-				Promises.execute(user_input, mode="CommandLine", session=self.consoleSession)
+				try:
+					Promises.execute(user_input, mode="CommandLine", session=self.consoleSession)
+				except:
+					#Promise not found.
+					print("Promise not found.")
 		reactor.stop()
 
 	def network_launch(self):
