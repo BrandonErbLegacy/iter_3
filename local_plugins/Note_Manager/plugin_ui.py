@@ -45,7 +45,6 @@ class NoteManagerWindow(Window):
 		Promises.execute("Category_Manager_List_Categories", func=self.displayCategories)
 
 	def displayCategories(self, catList):
-		print("Refreshing Categories :D")
 		for cat in catList:
 			self.categorySearchPanel.addCategory(cat)
 

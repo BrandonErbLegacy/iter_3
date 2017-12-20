@@ -10,7 +10,7 @@ class CreateNewCategory(Window):
 
 		self.successFunction = None
 
-		self.geometry("300x200")
+		self.geometry("300x210")
 
 		self.catNameFrame = Frame(self)
 		self.catDescFrame = Frame(self)
@@ -23,17 +23,20 @@ class CreateNewCategory(Window):
 		catNameL = Label(self.catNameFrame, text="Category Name")
 		self.catNameE = Entry(self.catNameFrame)
 		catNameL.pack(fill="x")
-		self.catNameE.pack(fill="x")
+		self.catNameE.pack(fill="x", ipadx=5, ipady=5)
 
 		catDescL = Label(self.catDescFrame, text="Category Description")
 		self.catDescT = Text(self.catDescFrame, height=5)
 		catDescL.pack(fill="x")
-		self.catDescT.pack(fill="x")
+		self.catDescT.pack(fill="x", ipadx=5, ipady=5)
 
 		catCreateB = Button(self.catButtonsFrame, text="Create", command=self.create)
 		catCancelB = Button(self.catButtonsFrame, text="Cancel", command=self.cancel)
 		catCreateB.pack(side="left", fill="x", expand=True, padx=2)
 		catCancelB.pack(side="right", fill="x", expand=True, padx=2)
+
+		self.bind("<<Close_Window>>", lambda e: self.destroy())
+		self.center()
 
 	def getCatName(self):
 		return self.catNameE.get()
