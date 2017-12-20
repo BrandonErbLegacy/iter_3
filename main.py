@@ -43,6 +43,10 @@ def launch_app_view(e=None):
 	# Load Plugins
 	plg_manage = PluginManager(b)
 	for activePlugin in plg_manage.loadedPlugins:
+		if activePlugin.LAUNCH_HOTKEY != None:
+			hotkeyManager.addHotkey(activePlugin.LAUNCH_HOTKEY)
+			lt.bind(activePlugin.LAUNCH_HOTKEY.getTkBind(), activePlugin.LAUNCH_HOTKEY.action)
+
 		if activePlugin.ON_CLICK_METHOD != None:
 			lt.launcher_frame.addAppToLauncher(activePlugin.CONST_PLUGIN_NAME, None, activePlugin.ON_CLICK_METHOD)
 

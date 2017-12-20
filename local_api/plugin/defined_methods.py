@@ -10,3 +10,4 @@ class PluginLoader:
 		self.ON_ERROR_METHOD = None
 		self.CONST_PLUGIN_NAME = None
 		self.UI_TREE_STYLES = None
+		self.LAUNCH_HOTKEY = None
