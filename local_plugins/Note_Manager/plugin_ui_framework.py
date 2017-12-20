@@ -1,4 +1,4 @@
-from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow, OkCancelDialog
+from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow, OkCancelDialog, Checkbox
 from local_api.network.twisted_promises import Promises
 from local_api.configuration.config_manager import Hotkey, hotkeyManager
 
@@ -8,6 +8,7 @@ from local_api.configuration.config_manager import Hotkey, hotkeyManager
 
 class CategorySearchPanel(Frame):
 	def __init__(self, master, **kw):
+		self.CURRENT_CAT_LIST = []
 		Frame.__init__(self, master, **kw)
 
 		self.className = "Frame"
@@ -20,13 +21,61 @@ class CategorySearchPanel(Frame):
 		self.categoryLabel.pack(side="left", fill="x", expand=True, anchor="center")
 
 		self.createNewCategoryButton = Button(self.headingFrame, text="+")
+		self.createNewCategoryButton["command"] = lambda: self.event_generate("<<Create_New_Category>>")
 		self.createNewCategoryButton.pack(side="right")
 
 		self.searchPanel = SearchPanel(self)
 		self.searchPanel.pack(fill="x")
 
+		self.cat_frame = Frame(self)
+		self.cat_frame.pack(fill="both", expand=True)
+
+		self.scrollable = ScrollableFrame(self.cat_frame)
+		self.scrollable.pack(fill="both", expand=True)
+		self.searchPanel.setSearchAction(self.searchCategories)
+
+	def focusSearch(self):
+		self.searchPanel._searchWidget.focus()
+
+	def searchCategories(self):
+		#TODO: This function needs to be evaluated for efficiency, and depth
+		key = self.searchPanel.getSearchedText()
+		if key == "":
+			for item in self.scrollable.getInner().winfo_children():
+				item.destroy()
+			for item in self.CURRENT_CAT_LIST:
+				self.addCategory(item, new=False)
+		else:
+			results = []
+			for item in self.CURRENT_CAT_LIST:
+				if key.lower() in item.name.lower():
+					results.append(item)
+				if key.lower() in item.description.lower():
+					if item not in results:
+						results.append(item)
+			#Clear existing notebooks
+			for item in self.scrollable.getInner().winfo_children():
+				item.destroy()
+
+			if len(results) == 0:
+				tempLabel = Label(self.scrollable.getInner(), text="There were no categories found\n for that query :(")
+				tempLabel.pack()
+			else:
+				#Display only notebooks that match
+				for item in results:
+					self.addCategory(item, new=False)
+
+	def addCategory(self, cat, new=True):
+		#print("Adding category with name %s"%cat.name)
+		if new == True:
+			self.CURRENT_CAT_LIST.append(cat)
+		c = Checkbox(self.scrollable.getInner(), text=cat.name, justify="left")
+		c.pack(fill="x", expand=True, anchor="e")
+
 	def reset(self):
-		pass
+		self.CURRENT_CAT_LIST = []
+		for item in self.scrollable.getInner().winfo_children():
+			item.destroy()
 
 class NoteSearchPanel(Frame):
 	def __init__(self, master, **kw):

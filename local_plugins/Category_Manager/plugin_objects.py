@@ -9,3 +9,4 @@ class Category(DatabaseBase):
 	id = Column(String(36), primary_key=True)
 	name = Column(String(36))
 	description = Column(String(36))
+	userID = Column(String(36))

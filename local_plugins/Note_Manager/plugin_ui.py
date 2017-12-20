@@ -41,11 +41,20 @@ class NoteManagerWindow(Window):
 
 		self.focus()
 
+	def refreshCategories(self):
+		Promises.execute("Category_Manager_List_Categories", func=self.displayCategories)
+
+	def displayCategories(self, catList):
+		print("Refreshing Categories :D")
+		for cat in catList:
+			self.categorySearchPanel.addCategory(cat)
+
 	def highlighted(self, e=None, ignoreFocus=False):
 		if (self.__FOCUSED__ == False) or (ignoreFocus == True):
 			self.__FOCUSED__ = True
 			self.reset()
 			Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
+			Promises.execute("Category_Manager_List_Categories", func=self.displayCategories)
 
 	def unhighlighted(self, e=None):
 		self.__FOCUSED__ = False
