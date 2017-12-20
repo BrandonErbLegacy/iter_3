@@ -1,4 +1,4 @@
-from collection import defaultdict
+from collections import defaultdict
 
 
 # The defaultdict based Config should possess crud items based on Config
@@ -23,3 +23,38 @@ class Config(defaultdict):
 
 	def _import_config_from_json(self):
 		pass
+
+
+class HotkeyManager:
+	__HOTKEYS__ = {}
+
+	def addHotkey(self, hotkey):
+		if hotkey.module not in self.__HOTKEYS__.keys():
+			self.__HOTKEYS__[hotkey.module] = []
+		self.__HOTKEYS__[hotkey.module].append(hotkey)
+
+class Hotkey:
+	def __init__(self, module, actionName=None, action=None, modifiers=[], keys=[]):
+		self.module = module
+		self.actionName = actionName
+		self.action = action
+		self.modifiers = modifiers
+		self.keys = keys
+
+	def getTkBind(self):
+		returnStr = "<"
+		if self.modifiers != None:
+			for modifier in self.modifiers:
+				returnStr = returnStr+modifier+"-"
+
+		keyCount = len(self.keys)
+		i = 0
+		for key in self.keys:
+			i = i+1
+			if i == keyCount:
+				returnStr = returnStr+key+">"
+			else:
+				returnStr = returnStr+key+"-"
+		return returnStr
+
+hotkeyManager = HotkeyManager()

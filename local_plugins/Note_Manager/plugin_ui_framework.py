@@ -1,5 +1,6 @@
 from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow, OkCancelDialog
 from local_api.network.twisted_promises import Promises
+from local_api.configuration.config_manager import Hotkey, hotkeyManager
 
 ###############################
 ## NoteManagerWindow Widgets ##
@@ -59,6 +60,7 @@ class NoteSearchPanel(Frame):
 		self.searchPanel.setSearchAction(self.searchNotebooks)
 
 	def searchNotebooks(self):
+		#TODO: This function needs to be evaluated for efficiency, and depth
 		key = self.searchPanel.getSearchedText()
 		if key == "":
 			for item in self.scrollable.getInner().winfo_children():
@@ -139,6 +141,7 @@ class NotebookWindow(Window):
 	def __init__(self):
 		self.__NOTEBOOK_OBJECT__ = None
 		self.__NOTEBOOK_PAGES__ = None
+		self.__NEEDS_SAVING__ = False
 		Window.__init__(self)
 
 		self.geometry("800x400")
@@ -163,6 +166,7 @@ class NotebookWindow(Window):
 
 		self.notebookPageContentHolder = Text(self.contentFrame)
 		self.notebookPageContentHolder.pack(fill="both", expand=True)
+		self.notebookPageContentHolder.bind("<KeyRelease>", lambda e: self.setSaved(False))
 
 		self.bind("<<Close_Window>>", self.close_window)
 		self.bind("<<Create_New_Notebook_Page>>", self.createNewNotebookPage)
@@ -175,6 +179,18 @@ class NotebookWindow(Window):
 
 		self.panedWindow.add(self.notebookTabManager)
 		self.panedWindow.add(self.contentFrame)
+		saveHotkey = Hotkey("Note_Manager", actionName="Save", modifiers=["Control"], keys=["s"])
+		closeHotkey = Hotkey("Note_Manager", actionName="Close", modifiers=["Control"], keys=["w"])
+
+		self.bind(saveHotkey.getTkBind(), self.saveNotebookPage)
+		self.bind(closeHotkey.getTkBind(), self.close_window)
+
+		hotkeyManager.addHotkey(saveHotkey)
+		hotkeyManager.addHotkey(closeHotkey)
+
+	def setSaved(self, bool):
+		"""True for has been saved. False for has not"""
+		self.__NEEDS_SAVING__ = (True if bool == False else False)
 
 	def searchNotebook(self):
 		pass
@@ -205,6 +221,7 @@ class NotebookWindow(Window):
 			self.addNotebookPage(page)
 
 	def saveNotebookPage(self, e=None):
+
 		page = self.notebookTabManager.getCurrentPage()
 		if page == None:
 			return
@@ -212,20 +229,26 @@ class NotebookWindow(Window):
 		Promises.execute("Note_Manager_Update_Notebook_Page", notebookObj=page,
 		func=lambda data: print("saved"))
 
-	def close_window(self, e=None):
-		def destroyWin():
-			self.destroy()
-			okCancel.destroy()
-		def saveData():
-			self.saveNotebookPage()
-			self.destroy()
-			destroyWin()
+	def needsSaved(self):
+		return self.__NEEDS_SAVING__
 
-		okCancel = OkCancelDialog("Do you want to save this page before exiting?")
-		okCancel.setCancelAction(destroyWin)
-		okCancel.setOkAction(saveData)
-		okCancel.setCancelText("Don't save")
-		okCancel.setOkText("Save")
+	def close_window(self, e=None):
+		if self.needsSaved():
+			def destroyWin():
+				self.destroy()
+				okCancel.destroy()
+			def saveData():
+				self.saveNotebookPage()
+				self.destroy()
+				destroyWin()
+
+			okCancel = OkCancelDialog("Do you want to save this page before exiting?")
+			okCancel.setCancelAction(destroyWin)
+			okCancel.setOkAction(saveData)
+			okCancel.setCancelText("Don't save")
+			okCancel.setOkText("Save")
+		else:
+			self.destroy()
 
 class NotebookTabManager(Frame):
 	def __init__(self, master, **kw):

@@ -5,6 +5,7 @@ from local_api.plugin.loader import PluginManager
 from local_api.network.twisted_v3 import PORT, HOST, PromiseExecutionClientFactory, PromiseExecutionProtocol, setTwistedPromiseManager
 import local_api.network.twisted_tksupport as tksupport
 from local_api.network.twisted_promises import Promises
+from local_api.configuration.config_manager import hotkeyManager #This will be used to keep track of hotkeys
 
 #from common_ui.templates import LoginTemplate
 from local_ui.views import AppView, LoginView
