@@ -1,5 +1,5 @@
 from local_api.plugin.defined_methods import PluginLoader as plgOverload
-from local_plugins.User_Manager.plugin_main import Main
+from local_plugins.McLua_Manager.plugin_main import Main
 
 class PluginLoader(plgOverload):
 	def __init__(self, side):
