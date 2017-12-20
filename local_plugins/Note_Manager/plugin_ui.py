@@ -3,6 +3,7 @@ from local_api.ui.base import Window, Frame
 from local_plugins.Note_Manager.plugin_ui_framework import NoteSearchPanel, CategorySearchPanel
 
 from local_api.network.twisted_promises import Promises
+from local_api.configuration.config_manager import Hotkey, hotkeyManager
 
 class NoteManagerWindow(Window):
 	def __init__(self):
@@ -19,14 +20,29 @@ class NoteManagerWindow(Window):
 		self.categorySearchPanel = CategorySearchPanel(self)
 		self.categorySearchPanel.pack(fill="y", side="right")
 
+		closeWindowHotkey = Hotkey("Note_Manager", actionName="Close Note List Window", modifiers=["Control"], keys=["w"])
+		newNoteHotkey = Hotkey("Note_Manager", actionName="Create New Note", modifiers=["Control"], keys=["n"])
+		searchHotkey = Hotkey("Note_Manager", actionName="Highlight Search bar", modifiers=["Control"], keys=["s"])
+		refreshHotkey = Hotkey("Note_Manager", actionName="Refresh Note selection", modifiers=["Control"], keys=["r"])
+
+		self.bind(closeWindowHotkey.getTkBind(), self.close_window)
+		self.bind(newNoteHotkey.getTkBind(), lambda e: self.noteSearchPanel.event_generate("<<Create_New_Notebook>>"))
+		self.bind(searchHotkey.getTkBind(), lambda e: self.noteSearchPanel.focusSearch())
+		self.bind(refreshHotkey.getTkBind(), lambda e: self.highlighted(e, ignoreFocus=True))
+
+		hotkeyManager.addHotkey(closeWindowHotkey)
+		hotkeyManager.addHotkey(newNoteHotkey)
+		hotkeyManager.addHotkey(searchHotkey)
+		hotkeyManager.addHotkey(refreshHotkey)
+
 		self.bind("<<Close_Window>>", self.close_window)
 		self.bind("<FocusIn>", self.highlighted)
 		self.bind("<FocusOut>", self.unhighlighted)
 
 		self.focus()
 
-	def highlighted(self, e=None):
-		if self.__FOCUSED__ == False:
+	def highlighted(self, e=None, ignoreFocus=False):
+		if (self.__FOCUSED__ == False) or (ignoreFocus == True):
 			self.__FOCUSED__ = True
 			self.reset()
 			Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)

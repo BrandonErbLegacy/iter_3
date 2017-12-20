@@ -59,6 +59,9 @@ class NoteSearchPanel(Frame):
 		#Handle searching of notebooks
 		self.searchPanel.setSearchAction(self.searchNotebooks)
 
+	def focusSearch(self):
+		self.searchPanel._searchWidget.focus()
+
 	def searchNotebooks(self):
 		#TODO: This function needs to be evaluated for efficiency, and depth
 		key = self.searchPanel.getSearchedText()
@@ -76,9 +79,14 @@ class NoteSearchPanel(Frame):
 			#Clear existing notebooks
 			for item in self.scrollable.getInner().winfo_children():
 				item.destroy()
-			#Display only notebooks that match
-			for item in results:
-				self.add_notebook(item, new=False)
+
+			if len(results) == 0:
+				tempLabel = Label(self.scrollable.getInner(), text="There were no notebooks found for that query :(")
+				tempLabel.pack()
+			else:
+				#Display only notebooks that match
+				for item in results:
+					self.add_notebook(item, new=False)
 
 
 	def reset(self):
