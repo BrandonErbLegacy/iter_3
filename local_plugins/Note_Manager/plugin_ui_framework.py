@@ -2,6 +2,10 @@ from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, Scrolla
 from local_api.network.twisted_promises import Promises
 from local_api.configuration.config_manager import Hotkey, hotkeyManager
 
+## Category Manager Dependencies ##
+from local_plugins.Category_Manager.plugin_ui_framework import AddCategoryToNote
+###################################
+
 ###############################
 ## NoteManagerWindow Widgets ##
 ###############################
@@ -34,6 +38,9 @@ class CategorySearchPanel(Frame):
 		self.scrollable.pack(fill="both", expand=True)
 		self.searchPanel.setSearchAction(self.searchCategories)
 
+		self.currentlyFiltered = []
+		self.catFilterFunc = None
+
 	def focusSearch(self):
 		self.searchPanel._searchWidget.focus()
 
@@ -65,12 +72,28 @@ class CategorySearchPanel(Frame):
 				for item in results:
 					self.addCategory(item, new=False)
 
+	def toggleCat(self, cat):
+		if cat.id not in self.currentlyFiltered:
+			self.currentlyFiltered.append(cat.id)
+		else:
+			self.currentlyFiltered.remove(cat.id)
+
+		if self.catFilterFunc != None:
+			self.filter()
+
+	def setFilterOnCategoryFunction(self, func):
+		self.catFilterFunc = func
+
+	def filter(self):
+		self.catFilterFunc(self.currentlyFiltered)
+
 	def addCategory(self, cat, new=True):
 		#print("Adding category with name %s"%cat.name)
 		if new == True:
 			self.CURRENT_CAT_LIST.append(cat)
-		c = Checkbox(self.scrollable.getInner(), text=cat.name, justify="left")
-		c.pack(fill="x", expand=True, anchor="e")
+		c = Checkbox(self.scrollable.getInner(), text=cat.name, anchor="w", command=lambda c=cat: self.toggleCat(c))
+		c.real_obj = cat
+		c.pack(fill="x", expand=True)
 
 	def reset(self):
 		self.CURRENT_CAT_LIST = []
@@ -80,6 +103,7 @@ class CategorySearchPanel(Frame):
 class NoteSearchPanel(Frame):
 	def __init__(self, master, **kw):
 		self.CURRENT_NOTEBOOK_LIST = []
+		self.PRESEARCH_NOTES = []
 		Frame.__init__(self, master, **kw)
 
 		self.className = "Frame"
@@ -111,23 +135,60 @@ class NoteSearchPanel(Frame):
 	def focusSearch(self):
 		self.searchPanel._searchWidget.focus()
 
+	def filterNotebooksByIDs(self, noteList):
+		idList = []
+		for item in noteList:
+			idList.append(item.id)
+		if idList != []:
+			searchables = self.getSearchableNotebooks()
+			#TODO: This function needs to be evaluated for efficiency, and depth
+			self.clearNotebookPanel()
+			for item in searchables:
+				if item.id in idList:
+					self.add_notebook(item, new=False)
+					self.PRESEARCH_NOTES.append(item)
+		else:
+			self.PRESEARCH_NOTES = []
+			self.displayAllNotebooks()
+
+	def getSearchableNotebooks(self):
+		notebooks = []
+		for item in self.scrollable.getInner().winfo_children():
+			try:
+				notebooks.append(item.notebook)
+			except AttributeError:
+				#We hit this if there is just a label and no notebooks
+				pass
+		return notebooks
+
+	def displayAllNotebooks(self):
+		print(self.PRESEARCH_NOTES)
+		if self.PRESEARCH_NOTES != []:
+			self.clearNotebookPanel()
+			for item in self.PRESEARCH_NOTES:
+				self.add_notebook(item, new=False)
+		else:
+			self.clearNotebookPanel()
+			for item in self.CURRENT_NOTEBOOK_LIST:
+				self.add_notebook(item, new=False)
+
+	def clearNotebookPanel(self):
+		for item in self.scrollable.getInner().winfo_children():
+			item.destroy()
+
 	def searchNotebooks(self):
 		#TODO: This function needs to be evaluated for efficiency, and depth
 		key = self.searchPanel.getSearchedText()
 		if key == "":
-			for item in self.scrollable.getInner().winfo_children():
-				item.destroy()
-			for item in self.CURRENT_NOTEBOOK_LIST:
-				self.add_notebook(item, new=False)
+			self.displayAllNotebooks()
 		else:
 			results = []
-			for item in self.CURRENT_NOTEBOOK_LIST:
+			for item in self.getSearchableNotebooks():
 				if key.lower() in item.title.lower():
 					results.append(item)
 
 			#Clear existing notebooks
-			for item in self.scrollable.getInner().winfo_children():
-				item.destroy()
+			self.clearNotebookPanel()
 
 			if len(results) == 0:
 				tempLabel = Label(self.scrollable.getInner(), text="There were no notebooks found for that query :(")
@@ -149,6 +210,7 @@ class NoteSearchPanel(Frame):
 		button = Button(self.scrollable.getInner(), text=notebook.title)
 		button["command"] = lambda: self.launchNotebook(notebook)
 		button.pack(fill="x", padx=5, pady=1, ipadx=5, ipady=5)
+		button.notebook = notebook
 		self.scrollable.configureScroll()
 
 	def launchNotebook(self, notebook):
@@ -204,9 +266,14 @@ class NotebookWindow(Window):
 		self.geometry("800x400")
 
 		self.menu = Menu(self)
+
 		self.menu.addMainMenu("File")
 		self.menu.addSubMenu("File", "New", self.createNewNotebookPage)
 		self.menu.addSubMenu("File", "Save", func=self.saveNotebookPage)
+
+		self.menu.addMainMenu("Edit")
+		self.menu.addSubMenu("Edit", "Manage Categories", self.launchCatManager)
+
 		self.menu.pack(fill="x")
 
 		self.panedWindow = PanedWindow(self)
@@ -236,14 +303,26 @@ class NotebookWindow(Window):
 
 		self.panedWindow.add(self.notebookTabManager)
 		self.panedWindow.add(self.contentFrame)
-		saveHotkey = Hotkey("Note_Manager", actionName="Save", modifiers=["Control"], keys=["s"])
-		closeHotkey = Hotkey("Note_Manager", actionName="Close", modifiers=["Control"], keys=["w"])
+		saveHotkey = Hotkey("Note_Manager", actionName="Save Note", modifiers=["Control"], keys=["s"])
+		closeHotkey = Hotkey("Note_Manager", actionName="Close Note", modifiers=["Control"], keys=["w"])
+		categoryHotkey = Hotkey("Note_Manager", actionName="Edit Categories", modifiers=["Control"], keys=["d"])
 
 		self.bind(saveHotkey.getTkBind(), self.saveNotebookPage)
 		self.bind(closeHotkey.getTkBind(), self.close_window)
+		self.bind(categoryHotkey.getTkBind(), self.launchCatManager)
 
 		hotkeyManager.addHotkey(saveHotkey)
 		hotkeyManager.addHotkey(closeHotkey)
+		hotkeyManager.addHotkey(categoryHotkey)
+
+	def launchCatManager(self, e=None):
+		c = AddCategoryToNote()
+		c.setNote(self.__NOTEBOOK_OBJECT__)
+		c.setSuccessCallback(self.processNoteCatRelations)
+
+	def processNoteCatRelations(self, relations=[], note=None):
+		for cat in relations:
+			Promises.execute("Note_Manager_Toggle_Category_Relation", notebookID=note.id, categoryID=cat.id)
 
 	def setSaved(self, bool):
 		"""True for has been saved. False for has not"""

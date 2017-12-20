@@ -79,10 +79,6 @@ class Note_Manager_Validate_Note_List(Promise):
 				return
 		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", getNoteList)
 
-class Note_Manager_List_Notes_By_Multiple_Category_ID(Promise):
-	#Lists notes with all categories
-	pass
-
 class Note_Manager_Create_Notebook(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
@@ -305,21 +301,130 @@ class Note_Manager_Delete_Notebook_Page(Promise):
 	def serverAction(self, **kw):
 		pass
 
-class Note_Manager_Update_Category_Relation(Promise):
+class Note_Manager_List_Notes_By_Multiple_Category_ID(Promise):
+	@AuthenticatePromise
+	def clientAction(self, **kw):
+		"""Takes 2 arguments:
+		categories: This is a list of categoryIDs
+		func: The function to be executed with the notes"""
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
+		self._register.sendData("NOTE_MANAGER_CATEGORY_IDS", kw["categories"])
+
+		self._register.fetchDataFromBuffer("NOTE_MANAGER_GET_NOTES_BY_CAT", lambda data: kw["func"](data))
+
+	@AuthenticatePromise
+	def serverAction(self, **kw):
+		local_node = kw["NODE"]
+		dbSession = GlobalDatabaseHandler.createNewSession()
+
+		def processNoteCatID(categories, userID):
+			notes = []
+			for catID in categories:
+				try:
+					query = dbSession.query(NoteCategory_Note_Relation).filter(NoteCategory_Note_Relation.category_id == catID).all()
+				except:
+					continue
+				hasPermissionNotes = []
+				for noteCatRelation in query:
+					noteObj = dbSession.query(Notebook).filter(Notebook.id == noteCatRelation.note_id).filter(Notebook.createdByID == userID).first()
+					if noteObj != None:
+						hasPermissionNotes.append(noteObj)
+
+				for note in hasPermissionNotes:
+					if note not in notes:
+						notes.append(note)
+			local_node.sendData("NOTE_MANAGER_GET_NOTES_BY_CAT", notes)
+			dbSession.close()
+
+		def receivedUserSession(sessionID):
+			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
+			if userID != None:
+				local_node.fetchDataFromBuffer("NOTE_MANAGER_CATEGORY_IDS", lambda data: processNoteCatID(data, userID))
+			else:
+				return
+
+		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
+
+class Note_Manager_Toggle_Category_Relation(Promise):
 	#Also adds category relations
-	pass
+	@AuthenticatePromise
+	def clientAction(self, **kw):
+		"""Takes 3 arguments:
+		notebookID: This is the ID of the Notebook
+		categoryID: This is the ID of the Category"""
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
+		self._register.sendData("NOTE_MANAGER_NOTE_CAT_ID", (kw["notebookID"], kw["categoryID"]))
 
-class Note_Manager_List_Categories(Promise):
-	pass
+		#self._register.fetchDataFromBuffer("NOTE_MANAGER_GET_CATEGORY_RELATIONS", lambda data: kw["func"](data))
 
-class Note_Manager_Create_Category(Promise):
-	pass
+	@AuthenticatePromise
+	def serverAction(self, **kw):
+		local_node = kw["NODE"]
+		dbSession = GlobalDatabaseHandler.createNewSession()
 
-class Note_Manager_Update_Category(Promise):
-	pass
+		def processNoteCatID(NoteCatTuple, userID):
+			notebookID, categoryID = NoteCatTuple[0], NoteCatTuple[1]
+			#notebookObj = dbSession.query(Notebook).filter(Notebook.notebook_id == notebookID).filter(Notebook.createdByID == userID)
+			#TODO: Validate notebookID exists
 
-class Note_Manager_Delete_Category(Promise):
-	pass
+			exists = dbSession.query(NoteCategory_Note_Relation).filter(NoteCategory_Note_Relation.note_id == notebookID).filter(NoteCategory_Note_Relation.category_id == categoryID).first()
+			if exists == None:
+				relation = NoteCategory_Note_Relation()
+				relation.category_id = categoryID
+				relation.note_id = notebookID
+				relation.id = str(uuid4())
+				GlobalDatabaseHandler.addObject(relation, dbSession)
+			else:
+				dbSession.delete(exists)
+			GlobalDatabaseHandler.saveSession(dbSession)
+			dbSession.close()
+
+		def receivedUserSession(sessionID):
+			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
+			if userID != None:
+				local_node.fetchDataFromBuffer("NOTE_MANAGER_NOTE_CAT_ID", lambda data: processNoteCatID(data, userID))
+			else:
+				return
+
+		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
+
+class Note_Manager_Get_Note_Categories(Promise):
+	#Also adds category relations
+	@AuthenticatePromise
+	def clientAction(self, **kw):
+		"""Takes 2 arguments:
+		notebookID: This is the ID of the Notebook
+		func: The function to be executed with the categories"""
+		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")
+		self._register.sendData("NOTE_MANAGER_GET_SESSION_ID", sessionID)
+		self._register.sendData("NOTE_MANAGER_NOTE_ID", kw["notebookID"])
+
+		self._register.fetchDataFromBuffer("NOTE_MANAGER_GET_CATEGORIES", lambda data: kw["func"](data))
+
+	@AuthenticatePromise
+	def serverAction(self, **kw):
+		local_node = kw["NODE"]
+		dbSession = GlobalDatabaseHandler.createNewSession()
+
+		def processNoteCatID(noteID, userID):
+			objects = dbSession.query(NoteCategory_Note_Relation).filter(NoteCategory_Note_Relation.note_id == noteID).all()
+
+			local_node.sendData("NOTE_MANAGER_GET_CATEGORIES", objects)
+
+			dbSession.close()
+
+		def receivedUserSession(sessionID):
+			userID = getUserBySession(sessionID, dbSession, getPeerIP(local_node))
+			if userID != None:
+				local_node.fetchDataFromBuffer("NOTE_MANAGER_NOTE_ID", lambda data: processNoteCatID(data, userID))
+			else:
+				return
+
+		local_node.fetchDataFromBuffer("NOTE_MANAGER_GET_SESSION_ID", receivedUserSession)
+
+
 
 Promises.register(Note_Manager_List_Notes())
 Promises.register(Note_Manager_Create_Notebook())
@@ -328,3 +433,8 @@ Promises.register(Note_Manager_Create_Notebook_Page())
 Promises.register(Note_Manager_Update_Notebook())
 Promises.register(Note_Manager_Update_Notebook_Page())
 Promises.register(Note_Manager_Validate_Note_List())
+#Promises.register(Note_Manager_Delete_Notebook_Page())
+# Category:Note relations
+Promises.register(Note_Manager_Toggle_Category_Relation())
+Promises.register(Note_Manager_Get_Note_Categories())
+Promises.register(Note_Manager_List_Notes_By_Multiple_Category_ID())

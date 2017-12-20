@@ -24,6 +24,8 @@ class AppView(Window):
 		self.launcher_frame.pack_propagate(False)
 		self.launcher_frame.pack(fill="both", padx=5, pady=5, expand=True)
 
+		self.title("Iter_3: App Launcher")
+
 class LoginView(LoginTemplate):
 	def __init__(self):
 		LoginTemplate.__init__(self)

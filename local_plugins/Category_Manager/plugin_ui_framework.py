@@ -1,4 +1,4 @@
-from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow, OkCancelDialog
+from local_api.ui.base import Frame, Entry, Label, Button, Window, Text, ScrollableFrame, Menu, PanedWindow, OkCancelDialog, Checkbox
 from local_api.configuration.config_manager import Hotkey, hotkeyManager
 
 from local_plugins.Category_Manager.plugin_promises import Promises
@@ -65,4 +65,78 @@ class CreateNewCategory(Window):
 		self.destroy()
 
 	def cancel(self):
+		self.destroy()
+
+class AddCategoryToNote(Window):
+	def __init__(self, **kw):
+		Window.__init__(self, **kw)
+
+		self.note = None
+		self.executeFunc = None
+		self.selectedCats = []
+		self.preselectedCats = []
+
+		topFrame = Frame(self)
+		self.midFrame = ScrollableFrame(self)
+		botFrame = Frame(self)
+
+		topFrame.pack(fill="x", side="top", pady=5)
+		self.midFrame.pack(fill="both", expand=True)
+		botFrame.pack(fill="x", side="bottom", pady=5)
+
+		topLabel = Label(topFrame, text="Select categories to add")
+		topLabel.pack(fill="x")
+
+		successButton = Button(botFrame, text="Add", command=self.save)
+		cancelButton = Button(botFrame, text="Cancel", command=self.close_window)
+
+		successButton.pack(side="left", fill="x", padx=5, expand=True)
+		cancelButton.pack(side="right", fill="x", padx=5, expand=True)
+
+		self.bind("<<Close_Window>>", self.close_window)
+
+		self.loadAllCategories()
+
+	def loadAllCategories(self):
+		Promises.execute("Category_Manager_List_Categories", func=self.inputCategories)
+
+	def preselectCats(self, cList):
+		for cat in cList:
+			for item in self.midFrame.getInner().winfo_children():
+				if item.real_obj.id == cat.category_id:
+					item.setValue(True)
+		self.preselectedCats = cList
+
+	def inputCategories(self, cList):
+		for cat in cList:
+			self.addCategory(cat)
+
+	def setSuccessCallback(self, func):
+		"""This sets the callback to be executed when the Add button is hit. It will
+		pass a list of selected categories to the function when activated,
+		as well as self.note"""
+		self.executeFunc = func
+
+	def save(self):
+		if self.note != None and self.executeFunc != None:
+			self.executeFunc(self.selectedCats, self.note)
+		self.destroy()
+
+	def setNote(self, note):
+		self.note = note
+		self.title("Adding categories to %s"%(note.title))
+		Promises.execute("Note_Manager_Get_Note_Categories", notebookID=self.note.id, func=self.preselectCats)
+
+	def toggleCat(self, cat):
+		if cat in self.selectedCats:
+			self.selectedCats.remove(cat)
+		else:
+			self.selectedCats.append(cat)
+
+	def addCategory(self, cat):
+		check = Checkbox(self.midFrame.getInner(), text=cat.name, command=lambda c=cat: self.toggleCat(c), anchor="w")
+		check.real_obj = cat
+		check.pack(fill="x")
+
+	def close_window(self, e=None):
 		self.destroy()

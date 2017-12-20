@@ -51,7 +51,7 @@ class Category_Manager_List_Categories(Promise):
 	@AuthenticatePromise
 	def clientAction(self, **kw):
 		"""Takes 1 argument
-		func: The function to be executed once the notebooks have been listed
+		func: The function to be executed once the categories have been listed
 		Returns a list of notebooks on the server
 		"""
 		sessionID = self._register.getEnvironmentVariable("AUTHENTICATION_SESSION_ID")

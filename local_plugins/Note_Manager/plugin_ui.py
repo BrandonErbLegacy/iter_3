@@ -20,6 +20,8 @@ class NoteManagerWindow(Window):
 		self.categorySearchPanel = CategorySearchPanel(self)
 		self.categorySearchPanel.pack(fill="y", side="right")
 
+		self.categorySearchPanel.setFilterOnCategoryFunction(self.filterByCat)
+
 		closeWindowHotkey = Hotkey("Note_Manager", actionName="Close Note List Window", modifiers=["Control"], keys=["w"])
 		newNoteHotkey = Hotkey("Note_Manager", actionName="Create New Note", modifiers=["Control"], keys=["n"])
 		searchHotkey = Hotkey("Note_Manager", actionName="Highlight Search bar", modifiers=["Control"], keys=["s"])
@@ -43,7 +45,14 @@ class NoteManagerWindow(Window):
 
 		self.title("Note Manager")
 
-	def refreshCategories(self):
+	def filterByCat(self, categories):
+		Promises.execute("Note_Manager_List_Notes_By_Multiple_Category_ID", categories=categories, func=self.selectDisplayNotes)
+
+	def selectDisplayNotes(self, notes):
+		"""This function displays a subset of existing notes"""
+		self.noteSearchPanel.filterNotebooksByIDs(notes)
+
+	def refreshCategories(self, cats):
 		Promises.execute("Category_Manager_List_Categories", func=self.displayCategories)
 
 	def displayCategories(self, catList):
