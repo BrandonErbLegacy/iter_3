@@ -6,6 +6,7 @@ from local_api.network.twisted_promises import Promises
 
 class NoteManagerWindow(Window):
 	def __init__(self):
+		self.__FOCUSED__ = False
 		Window.__init__(self)
 
 		self.notehashVal = None
@@ -20,12 +21,18 @@ class NoteManagerWindow(Window):
 
 		self.bind("<<Close_Window>>", self.close_window)
 		self.bind("<FocusIn>", self.highlighted)
+		self.bind("<FocusOut>", self.unhighlighted)
 
 		self.focus()
 
 	def highlighted(self, e=None):
-		self.reset()
-		Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
+		if self.__FOCUSED__ == False:
+			self.__FOCUSED__ = True
+			self.reset()
+			Promises.execute("Note_Manager_List_Notes", func=self.load_notebook_list)
+
+	def unhighlighted(self, e=None):
+		self.__FOCUSED__ = False
 
 	def reset(self):
 		self.noteSearchPanel.reset()
