@@ -29,6 +29,7 @@ class CategorySearchPanel(Frame):
 
 class NoteSearchPanel(Frame):
 	def __init__(self, master, **kw):
+		self.CURRENT_NOTEBOOK_LIST = []
 		Frame.__init__(self, master, **kw)
 
 		self.className = "Frame"
@@ -54,11 +55,38 @@ class NoteSearchPanel(Frame):
 		self.scrollable.pack(fill="both", expand=True)
 		#self.scrollable.showScrollbar(True)
 
+		#Handle searching of notebooks
+		self.searchPanel.setSearchAction(self.searchNotebooks)
+
+	def searchNotebooks(self):
+		key = self.searchPanel.getSearchedText()
+		if key == "":
+			for item in self.scrollable.getInner().winfo_children():
+				item.destroy()
+			for item in self.CURRENT_NOTEBOOK_LIST:
+				self.add_notebook(item, new=False)
+		else:
+			results = []
+			for item in self.CURRENT_NOTEBOOK_LIST:
+				if key.lower() in item.title.lower():
+					results.append(item)
+
+			#Clear existing notebooks
+			for item in self.scrollable.getInner().winfo_children():
+				item.destroy()
+			#Display only notebooks that match
+			for item in results:
+				self.add_notebook(item, new=False)
+
+
 	def reset(self):
+		self.CURRENT_NOTEBOOK_LIST = []
 		for item in self.scrollable.getInner().winfo_children():
 			item.destroy()
 
-	def add_notebook(self, notebook):
+	def add_notebook(self, notebook, new=True):
+		if new:
+			self.CURRENT_NOTEBOOK_LIST.append(notebook)
 		button = Button(self.scrollable.getInner(), text=notebook.title)
 		button["command"] = lambda: self.launchNotebook(notebook)
 		button.pack(fill="x", padx=5, pady=1, ipadx=5, ipady=5)
@@ -86,8 +114,18 @@ class SearchPanel(Frame):
 		self._searchWidget = Entry(self)
 		self._searchWidget.className = "SearchPanel_SearchEntry"
 		self._searchWidget.pack(side="right", fill="x", expand=True, padx=5, pady=5, ipadx=5, ipady=5)
+		self._searchWidget.bind("<KeyRelease>", lambda e: self.getSearchAction()())
+		#Get the search action and call it
+
+	def getSearchedText(self):
+		return self._searchWidget.get()
+
+	def clear(self):
+		self._searchWidget.delete(0, "END")
 
 	def getSearchAction(self):
+		if self.__SEARCH_ACTION__ == None:
+			raise Warning("Attempted to search without a search function set.")
 		return self.__SEARCH_ACTION__
 
 	def setSearchAction(self, func):
@@ -137,6 +175,9 @@ class NotebookWindow(Window):
 
 		self.panedWindow.add(self.notebookTabManager)
 		self.panedWindow.add(self.contentFrame)
+
+	def searchNotebook(self):
+		pass
 
 	def addNotebookPage(self, notebookPage):
 		self.notebookTabManager.addNotebookPage(notebookPage)
