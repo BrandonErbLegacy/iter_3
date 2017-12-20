@@ -264,6 +264,15 @@ class Window(Toplevel):
 		#self.menu.pack(fill=X)
 		self.focus()
 
+	def center(self):
+		screen_width = self.winfo_screenwidth()
+		screen_height = self.winfo_screenheight()
+		my_height = self.winfo_reqheight()
+		my_width = self.winfo_reqwidth()
+		newX = (screen_width/2) - (my_width/2)
+		newY = (screen_height/2) - (my_height/2)
+		self.geometry("+%i+%i"%(newX, newY))
+
 	def destroyWindow(self, e=None):
 		self.destroy()
 
@@ -674,12 +683,21 @@ class OkDialog(Window):
 		self.okButton = Button(self, text="Ok", command=self.destroyWindow)
 		self.okButton.pack(fill="x", expand=True, padx=5, pady=5)
 
+		self.geometry("300x100")
+		self.center()
+		self.focus()
+
+	def setOkText(self, text):
+		self.okButton["text"] = text
+
+	def setOkAction(self, callback):
+		self.okButton["command"] = callback
+
 class OkCancelDialog(Window):
 	def __init__(self, message, **kw):
 		Window.__init__(self, **kw)
 		self.bind("<<Close_Window>>", self.destroyWindow)
 		self.className = "Window"
-		self.geometry("300x100")
 
 		self.label = Label(self, text=message)
 		self.label.pack(fill="x", expand=True, anchor="w")
@@ -692,6 +710,10 @@ class OkCancelDialog(Window):
 
 		self.cancelButton = Button(self.buttonFrame, text="Cancel")
 		self.cancelButton.pack(side="right", fill="x", expand=True, padx=5, pady=5)
+
+		self.geometry("300x100")
+		self.center()
+		self.focus()
 
 	def setOkText(self, text):
 		self.okButton["text"] = text
