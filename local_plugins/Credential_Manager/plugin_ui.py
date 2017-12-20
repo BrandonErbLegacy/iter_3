@@ -37,6 +37,8 @@ class CredentialManagerWindow(NetworkConnectedWindow):
 		self.accInfoPanel.bind("<<Save_Credential>>", self.saveCredential)
 		self.addCredButton["command"] = self.accInfoPanel.resetAllValues
 
+		self.title("Credential Vault")
+
 	def saveCredential(self, e=None):
 		if self.checkIfCredentialSave():
 			cred = self.getCredential()

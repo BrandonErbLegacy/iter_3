@@ -41,6 +41,8 @@ class NoteManagerWindow(Window):
 
 		self.focus()
 
+		self.title("Note Manager")
+
 	def refreshCategories(self):
 		Promises.execute("Category_Manager_List_Categories", func=self.displayCategories)
 

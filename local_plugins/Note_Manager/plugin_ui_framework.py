@@ -271,6 +271,7 @@ class NotebookWindow(Window):
 		self.__NOTEBOOK_OBJECT__ = notebookObject
 		self.notebookTitle.setNotebookTitle(notebookObject.title)
 		self.notebookTitle.updateNotebookObj(notebookObject)
+		self.title("Notebook (%s)"%notebookObject.title)
 
 	def setNotebookPages(self, notebookPageList):
 		self.__NOTEBOOK_PAGES__ = notebookPageList
