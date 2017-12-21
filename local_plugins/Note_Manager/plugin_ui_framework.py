@@ -162,7 +162,7 @@ class NoteSearchPanel(Frame):
 		return notebooks
 
 	def displayAllNotebooks(self):
-		print(self.PRESEARCH_NOTES)
+		#print(self.PRESEARCH_NOTES)
 		if self.PRESEARCH_NOTES != []:
 			self.clearNotebookPanel()
 			for item in self.PRESEARCH_NOTES:

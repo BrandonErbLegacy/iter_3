@@ -11,7 +11,7 @@ class PromiseManager:
 		except KeyError:
 			pass
 		self._envVariables[name] = var
-		print("Added %s"%name)
+		print("Promise Manager: Added %s to environment variables"%name)
 
 	def getEnvironmentVariable(self, name):
 		try:
