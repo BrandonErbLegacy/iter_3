@@ -26,16 +26,19 @@ class NoteManagerWindow(Window):
 		newNoteHotkey = Hotkey("Note_Manager", actionName="Create New Note", modifiers=["Control"], keys=["n"])
 		searchHotkey = Hotkey("Note_Manager", actionName="Highlight Search bar", modifiers=["Control"], keys=["s"])
 		refreshHotkey = Hotkey("Note_Manager", actionName="Refresh Note selection", modifiers=["Control"], keys=["r"])
+		newCatHotkey = Hotkey("Note_Manager", actionName="Create New Category", modifiers=["Control"], keys=["q"])
 
 		self.bind(closeWindowHotkey.getTkBind(), self.close_window)
 		self.bind(newNoteHotkey.getTkBind(), lambda e: self.noteSearchPanel.event_generate("<<Create_New_Notebook>>"))
 		self.bind(searchHotkey.getTkBind(), lambda e: self.noteSearchPanel.focusSearch())
 		self.bind(refreshHotkey.getTkBind(), lambda e: self.highlighted(e, ignoreFocus=True))
+		#self.bind(newCatHotkey.getTkBind(), lambda e: print('hi'))
 
 		hotkeyManager.addHotkey(closeWindowHotkey)
 		hotkeyManager.addHotkey(newNoteHotkey)
 		hotkeyManager.addHotkey(searchHotkey)
 		hotkeyManager.addHotkey(refreshHotkey)
+		hotkeyManager.addHotkey(newCatHotkey)
 
 		self.bind("<<Close_Window>>", self.close_window)
 		self.bind("<FocusIn>", self.highlighted)

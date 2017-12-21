@@ -4,8 +4,8 @@ Iter_3 is at it's core is a series of APIs designed to quickly create and implem
 * Note manager
 * Calculator
 Please keep in mind each of these is a feature rich application designed to work with the Iter_3 APIs.
-## What can the Iter_3 API system do?
 
+## What can the Iter_3 API system do?
 * User Management
 * Server/Client interfacing made easy
 * Implicit data transport and synchronized data execution
@@ -13,7 +13,6 @@ Please keep in mind each of these is a feature rich application designed to work
 * Easily customizeable UI
 
 ## What are some upcoming features?
-
 * Server based settings storage
 * Default global and local encryption for data
 
@@ -23,7 +22,7 @@ Pain points:
  - CRUD functions feel repetitive
  - Creating UI & hooking it up is time consuming
    - This is a direct result of the UI/Network not having a clean connection
-   - Results are also a pain to pass back and forth
+   - Results are also a pain to pass back and forth (Something similar to callback hell)
  - Plugin system is a bit quirky
 
 
