@@ -59,6 +59,8 @@ class PromiseManager:
 				return self.getPromise(promiseName).commandLineAction(**kw)
 		except Warning:
 			raise PromiseNotFound("Promise attempted to be called that does not exist (%s)"%promiseName)
+		except Exception as e:
+			print("Error executing %s: "%promiseName, e)
 
 class Promise:
 	def __init__(self):
